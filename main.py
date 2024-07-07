@@ -21,6 +21,7 @@ dense2.forward(activation1.output)
 activation2.forward(dense2.output)
 
 loss = loss_function.calculate(activation2.output, y)
+
 # Print loss value
 print('loss:', loss)
 
