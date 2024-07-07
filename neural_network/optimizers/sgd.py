@@ -5,5 +5,5 @@ class sgd:
         self.learning_rate = learning_rate
 
     def update_weights(self, layer):
-        layer.weights += self.learning_rate * layer.dweights
-        layer.bias += self.learning_rate * layer.bias
+        layer.weights += -self.learning_rate * layer.dweights
+        layer.biases += -self.learning_rate * layer.dbiases

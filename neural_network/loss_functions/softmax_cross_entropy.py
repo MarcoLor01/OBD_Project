@@ -5,7 +5,6 @@ from neural_network.loss_functions.loss_categorical_cross_entropy import loss_ca
 
 
 class softmax_cross_entropy:
-
     def __init__(self):
         self.output = None
         self.dinputs = None

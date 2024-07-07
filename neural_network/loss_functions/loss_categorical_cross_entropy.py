@@ -1,5 +1,4 @@
 import numpy as np
-
 from neural_network.loss_functions.loss_common import loss
 
 
