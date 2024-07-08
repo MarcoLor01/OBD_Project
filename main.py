@@ -8,13 +8,13 @@ from neural_network.metrics_implementations.metrics import accuracy_metric
 
 X, y = spiral_data(samples=100, classes=3)
 
-dense1 = dense_layer(2, 64)
+dense1 = dense_layer(2, 128)
 activation1 = relu()
-dense2 = dense_layer(64, 3)
+dense2 = dense_layer(128, 3)
 loss = softmax_cross_entropy()
-optimizer = sgd()
+optimizer = sgd(decay=1e-3)
 
-for epoch in range(0, 10001):
+for epoch in range(0, 40001):
 
     dense1.forward(X)
     activation1.forward(dense1.output)
