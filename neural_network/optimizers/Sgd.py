@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class sgd:
+class Sgd:
 
     def __init__(self, learning_rate=1.0, decay=0., momentum=0.):
         self.learning_rate = learning_rate

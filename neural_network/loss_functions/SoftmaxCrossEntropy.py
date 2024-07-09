@@ -1,15 +1,15 @@
 import numpy as np
 
-from neural_network.activation_functions.softmax_act_function import softmax
-from neural_network.loss_functions.loss_categorical_cross_entropy import loss_categorical_cross_entropy
+from neural_network.activation_functions.SoftmaxActivationFunction import Softmax
+from neural_network.loss_functions.LossCategoricalCrossEntropy import LossCategoricalCrossEntropy
 
 
-class softmax_cross_entropy:
+class SoftmaxCrossEntropy:
     def __init__(self):
         self.output = None
         self.dinputs = None
-        self.activation = softmax()
-        self.loss = loss_categorical_cross_entropy()
+        self.activation = Softmax()
+        self.loss = LossCategoricalCrossEntropy()
 
     def forward(self, inputs, y_true):
         self.activation.forward(inputs)

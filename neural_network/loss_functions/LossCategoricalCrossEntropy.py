@@ -1,8 +1,8 @@
 import numpy as np
-from neural_network.loss_functions.loss_common import loss
+from neural_network.loss_functions.LossCommon import Loss
 
 
-class loss_categorical_cross_entropy(loss):
+class LossCategoricalCrossEntropy(Loss):
 
     def __init__(self):
         self.dinputs = None

@@ -4,7 +4,7 @@ import numpy as np
 # Common loss function
 
 
-class loss(ABC):
+class Loss(ABC):
     @abstractmethod
     def forward(self, output, target_class):
         pass

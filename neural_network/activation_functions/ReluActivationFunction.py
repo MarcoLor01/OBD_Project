@@ -3,7 +3,7 @@ import numpy as np
 # Implementation of relu activation function
 
 
-class relu:
+class Relu:
 
     def __init__(self):
         self.inputs = None

@@ -3,7 +3,7 @@ import numpy as np
 
 # Implementation of softmax activation function
 
-class softmax:
+class Softmax:
 
     def __init__(self):
         self.dinputs = None

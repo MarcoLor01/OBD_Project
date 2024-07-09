@@ -1,20 +1,20 @@
 import numpy as np
 from nnfs.datasets import spiral_data
 
-from neural_network.activation_functions.relu_act_function import relu
-from neural_network.dense_layer import dense_layer
-from neural_network.loss_functions.softmax_cross_entropy import softmax_cross_entropy
-from neural_network.metrics_implementations.metrics import accuracy_metric
-from neural_network.optimizers.adagrad import adagrad
-from utils.graphic import plot_training_metrics
+from neural_network.activation_functions.ReluActivationFunction import Relu
+from neural_network.DenseLayer import DenseLayer
+from neural_network.loss_functions.SoftmaxCrossEntropy import SoftmaxCrossEntropy
+from neural_network.metrics_implementations.Metrics import accuracy_metric
+from neural_network.optimizers.Adam import Adam
+from utils.Graphic import plot_training_metrics
 
 X, y = spiral_data(samples=100, classes=3)
 
-dense1 = dense_layer(2, 64)
-activation1 = relu()
-dense2 = dense_layer(64, 3)
-loss = softmax_cross_entropy()
-optimizer = adagrad(decay=1e-4)
+dense1 = DenseLayer(2, 64)
+activation1 = Relu()
+dense2 = DenseLayer(64, 3)
+loss = SoftmaxCrossEntropy()
+optimizer = Adam(learning_rate=0.05, decay=5e-7)
 
 loss_history = []
 accuracy_history = []
