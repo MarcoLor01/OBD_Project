@@ -10,20 +10,20 @@ def regularization_loss(layer):
 
     # L1 regularization - weights
     if layer.l1_regularization_weights > 0:
-        reg_loss += layer.weight_regularizer_l1 * np.sum(np.abs(layer.weights))
+        reg_loss += layer.l1_regularization_weights * np.sum(np.abs(layer.weights))
 
     # L2 regularization - weights
     if layer.l2_regularization_weights > 0:
-        reg_loss += layer.weight_regularizer_l2 * np.sum(layer.weights * layer.weights)
+        reg_loss += layer.l2_regularization_weights * np.sum(layer.weights * layer.weights)
 
     # L1 regularization - biases
     if layer.l1_regularization_bias > 0:
-        reg_loss += layer.bias_regularizer_l1 * np.sum(np.abs(layer.biases))
+        reg_loss += layer.l1_regularization_bias * np.sum(np.abs(layer.biases))
 
 
     # L2 regularization - biases
     if layer.l2_regularization_bias > 0:
-        reg_loss += layer.bias_regularizer_l2 * np.sum(layer.biases * layer.biases)
+        reg_loss += layer.l2_regularization_bias * np.sum(layer.biases * layer.biases)
 
     return reg_loss
 
