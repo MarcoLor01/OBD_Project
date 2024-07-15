@@ -1,13 +1,15 @@
 import numpy as np
 
+from neural_network.loss_functions.LossCommon import Loss
 
-class LossBinaryCrossEntropy:
+
+class LossBinaryCrossEntropy(Loss):
 
     def __init__(self):
+        super().__init__()
         self.dinputs = None
 
-    @staticmethod
-    def forward(prediction, target):
+    def forward(self, prediction, target):
         pred_clipped = np.clip(prediction, 1e-7, 1 - 1e-7)
         sample_losses = -(target * np.log(pred_clipped) + (1 - target) * np.log(1 - pred_clipped))
         sample_losses = np.mean(sample_losses, axis=-1)

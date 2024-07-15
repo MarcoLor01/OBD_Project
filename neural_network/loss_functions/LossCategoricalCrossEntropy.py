@@ -5,6 +5,7 @@ from neural_network.loss_functions.LossCommon import Loss
 class LossCategoricalCrossEntropy(Loss):
 
     def __init__(self):
+        super().__init__()
         self.dinputs = None
 
     def forward(self, output, target_class):
