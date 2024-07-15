@@ -1,6 +1,6 @@
 
 
-class Activation_Linear:
+class ActivationLinear:
 
     def __init__(self):
         self.inputs = None
