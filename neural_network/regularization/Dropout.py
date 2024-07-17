@@ -10,6 +10,9 @@ class Dropout:
         self.output = None
         self.dinputs = None
 
+    def __str__(self):
+        return f"Dropout di rate: ({1 - self.rate})"
+
     def forward(self, inputs, training):
         self.inputs = inputs
         self.mask = np.random.binomial(1, self.rate, size=inputs.shape) / self.rate

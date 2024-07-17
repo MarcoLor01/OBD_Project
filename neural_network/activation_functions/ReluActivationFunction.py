@@ -18,6 +18,9 @@ class Relu:
         self.inputs = input_units
         self.output = np.maximum(0, input_units)  # Element-wise maximum
 
+    def __str__(self):
+        return f"Attivazione Relu"
+
     def backward(self, dvalues):
         self.dinputs = dvalues.copy()
         self.dinputs[self.inputs <= 0] = 0

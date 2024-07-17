@@ -65,7 +65,6 @@ class Model:
                     end = start + batch_size
                     batch_X = X[start:end]
                     batch_y = y[start:end]
-
                 output = self.forward(batch_X, training=True)
                 data_loss, reg_loss = self.loss.calculate(output, batch_y, include_reg=True)
                 loss = data_loss + reg_loss

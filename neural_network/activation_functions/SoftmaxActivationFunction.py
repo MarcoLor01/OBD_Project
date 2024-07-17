@@ -12,6 +12,8 @@ class Softmax:
         self.dinputs = None
         self.output = None
 
+    def __str__(self):
+        return f"Attivazione Softmax"
     def forward(self, input_units, training):
         # Get unnormalized probabilities
         exp_values = np.exp(input_units - np.max(input_units, axis=1, keepdims=True))

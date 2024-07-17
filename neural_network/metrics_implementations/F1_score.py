@@ -2,6 +2,10 @@ import numpy as np
 
 
 class F1Score:
+
+    def initialize(self, y):
+        pass
+
     def __init__(self):
         self.accumulated_true_positives = None
         self.accumulated_false_positives = None

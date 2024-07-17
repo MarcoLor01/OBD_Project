@@ -5,6 +5,7 @@ from neural_network.metrics_implementations.Accuracy import Accuracy
 
 class AccuracyRegression(Accuracy):
     def __init__(self):
+        super().__init__()
         self.accuracy = None
 
     def initialize(self, y, recalculate=False):

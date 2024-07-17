@@ -3,7 +3,7 @@ import numpy as np
 
 
 class DenseLayer:
-    def __init__(self, n_inputs, n_neurons, l1_regularization_bias=0, l1_regularization_weights=0, l2_regularization_weights=0, l2_regularization_bias=0, first_layer = False):
+    def __init__(self, n_inputs, n_neurons, l1_regularization_bias=0, l1_regularization_weights=0, l2_regularization_weights=0, l2_regularization_bias=0):
 
         self.weights = 0.1 * np.random.randn(n_inputs, n_neurons)  # 0.01 * Random value from a normal distribution with average = 0 and st. dev = 1
         self.biases = np.zeros((1, n_neurons))
@@ -16,6 +16,14 @@ class DenseLayer:
         self.dweights = None
         self.dbiases = None
         self.dinputs = None
+
+    def __str__(self):
+        if self.l1_regularization_weights != 0:
+            return f"Layer Dense di dimensione: ({self.weights.shape[0]}, {self.weights.shape[1]}) con regolarizzazione L1 di valori - Weights: {self.l1_regularization_weights}, Bias: {self.l1_regularization_bias}"
+        elif self.l2_regularization_weights != 0:
+            return f"Layer Dense di dimensione: ({self.weights.shape[0]}, {self.weights.shape[1]}) con regolarizzazione L2 di valori - Weights: {self.l2_regularization_weights}, Bias: {self.l2_regularization_bias}"
+        else:
+            return f"Layer Dense di dimensione: ({self.weights.shape[0]}, {self.weights.shape[1]}) senza regolarizzazione"
 
     def forward(self, inputs, training):
         # ** inputs = (m,n), weights = (n, p) with p number of units in the output (like the next level), bias = (p), output = (m,p)
