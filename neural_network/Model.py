@@ -20,6 +20,7 @@ class Model:
         self.optimizer = None
         self.trainable = []
         self.softmax_output = None
+        self.accuracy_val_value = 0
 
     def add_layer(self, layer):
         self.layers.append(layer)
@@ -184,6 +185,7 @@ class Model:
         print(f'validation, ' +
               f'acc: {validation_accuracy:.3f}, ' +
               f'loss: {validation_loss:.3f}')
+        self.accuracy_val_value = validation_accuracy
         return validation_loss
 
     def predict(self, X, *, batch_size=None):

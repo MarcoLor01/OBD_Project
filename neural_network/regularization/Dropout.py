@@ -11,7 +11,7 @@ class Dropout:
         self.dinputs = None
 
     def __str__(self):
-        return f"Dropout di rate: ({1 - self.rate})"
+        return f"Dropout di rate: ({round(1 - self.rate,1)})"
 
     def forward(self, inputs, training):
         self.inputs = inputs

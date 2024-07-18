@@ -22,6 +22,8 @@ from neural_network.regularization.EarlyStopping import EarlyStopping
 
 
 def randomizedSearchCV(X, y, *, val_data, parameters, combination, number_of_classes, epochs, batch_size):
+    best_model = None
+    best_value = 0.0
     optimizer_choice = select_random_optimizer(parameters)
     number_of_layers = select_number_layer(parameters)
     X_val, y_val = val_data
@@ -39,7 +41,9 @@ def randomizedSearchCV(X, y, *, val_data, parameters, combination, number_of_cla
 
     for i in range(combination):
         next_input = X.shape[1]
-        random.seed(i)
+        random.seed(None)
+        weights_reg = select_common_regularizer(parameters)
+
         model = Model()
 
         for j in range(number_of_layers):
@@ -49,8 +53,9 @@ def randomizedSearchCV(X, y, *, val_data, parameters, combination, number_of_cla
             if j == number_of_layers - 1:
                 neurons_per_layer = number_of_classes
 
-            dropout, next_layer = instance_regularizers(regularizers, next_input, neurons_per_layer)
-            print(next_layer)
+            dropout = instance_regularizers(regularizers)
+            next_layer = instance_layer(weights_reg, next_input, neurons_per_layer)
+
             if next_layer is not None:
                 model.add_layer(next_layer)
                 next_input = neurons_per_layer
@@ -68,9 +73,27 @@ def randomizedSearchCV(X, y, *, val_data, parameters, combination, number_of_cla
             model.set(loss=loss, optimizer=optimizer_choice, accuracy=accuracy, early_stopping=early_stopping)
         else:
             model.set(loss=loss, optimizer=optimizer_choice, accuracy=accuracy)
-        model.finalize()
         print_model(i, model)
+        model.finalize()
         model.train(X, y, val_data=(X_val, y_val), epochs=epochs, batch_size=batch_size, print_every=100)
+
+        if model.accuracy_val_value > best_value:
+            best_value = model.accuracy_val_value
+            best_model = model
+
+    return best_model
+
+
+def instance_layer(weights_reg, next_input, neurons_per_layer):
+    if 'L2' in weights_reg:
+        l2_values = weights_reg['L2']
+        return DenseLayer(next_input, neurons_per_layer, l2_regularization_bias=l2_values['bias'], l2_regularization_weights=l2_values['weights'])
+    if 'L1' in weights_reg:
+        l1_values = weights_reg['L1']
+        return DenseLayer(next_input, neurons_per_layer, l1_regularization_bias=l1_values['bias'],
+                          l1_regularization_weights=l1_values['weights'])
+    else:
+        return DenseLayer(next_input, neurons_per_layer)
 
 
 def get_early_stopping_instance(parameters):
@@ -166,34 +189,26 @@ def select_random_regularization(parameters):
 
     return selected_regularization
 
-## Cambiare questo
-def instance_regularizers(selected_regularization, n_inputs, n_neurons):
-    dropout = None
-    layer_this = None
-    is_inserted = False
-    for reg_technique, params in selected_regularization.items():
-        if reg_technique == "Dropout" and random.choice([True, False]):
-            dropout_rate = params["rate"]
-            dropout = Dropout(dropout_rate)
-        if reg_technique == "L2" and random.choice([True, False]) and is_inserted is False:
-            weights_reg = params.get("weights")
-            bias_reg = params.get("bias")
-            if weights_reg is not None and bias_reg is not None:
-                layer_this = DenseLayer(n_inputs=n_inputs, n_neurons=n_neurons,
-                                        l2_regularization_weights=weights_reg,
-                                        l2_regularization_bias=bias_reg)
-                is_inserted = True
-            else:
-                raise ValueError("Both weights and bias regularization values must be provided for L2.")
-        elif reg_technique == "L1" and random.choice([True, False]) and is_inserted is False:
-            weights_reg = params.get("weights")
-            bias_reg = params.get("bias")
-            if weights_reg is not None and bias_reg is not None:
-                layer_this = DenseLayer(n_inputs=n_inputs, n_neurons=n_neurons,
-                                        l1_regularization_weights=weights_reg,
-                                        l1_regularization_bias=bias_reg)
-                is_inserted = True
-            else:
-                raise ValueError("Both weights and bias regularization values must be provided for L1.")
 
-    return dropout, layer_this
+def instance_regularizers(selected_regularization):
+    if "Dropout" in selected_regularization and random.choice([True, False]):
+        dropout_rate = selected_regularization["Dropout"]["rate"]
+        return Dropout(dropout_rate)
+    return None
+
+
+def select_common_regularizer(parameters):
+    regularization = parameters['regularization']
+    selected_regularization = {}
+
+    # Seleziona L1 o L2 una volta
+    reg_choice = random.choice(['L1', 'L2', None])
+    if reg_choice in ['L1', 'L2']:
+        for reg in regularization:
+            if reg_choice in reg:
+                weights_reg = random.choice(reg[reg_choice]["weights"])
+                bias_reg = random.choice(reg[reg_choice]["bias"])
+                selected_regularization[reg_choice] = {"weights": weights_reg, "bias": bias_reg}
+                break
+
+    return selected_regularization
