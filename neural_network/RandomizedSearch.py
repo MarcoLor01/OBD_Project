@@ -151,7 +151,8 @@ def select_random_optimizer(parameters):
 
 
 def print_model(iteration, model):
-    print(f"Combinazione numero: {iteration}")
+    if iteration >= 0:
+        print(f"Combinazione numero: {iteration}")
     for i, layer in enumerate(model.layers):
         print("----------------------------")
         print(f"Layer numero {i}: {layer}")
