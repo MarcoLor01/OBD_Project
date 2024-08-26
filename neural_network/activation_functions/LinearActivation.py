@@ -7,7 +7,7 @@ class ActivationLinear:
         self.output = None
         self.dinputs = None
 
-    def forward(self, inputs):
+    def forward(self, inputs, training):
         self.inputs = inputs
         self.output = inputs
 

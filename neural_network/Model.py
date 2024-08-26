@@ -31,7 +31,7 @@ class Model:
         self.early_stopping = early_stopping
 
     def train(self, X, y, *, epochs=1, print_every=1, val_data=None, batch_size=None):
-        validation_early_stop = -1
+        val_loss = 0
         X_val = None
         y_val = None
         self.accuracy.initialize(y)
@@ -75,14 +75,11 @@ class Model:
                 loss = data_loss + reg_loss
                 prediction = self.output_activation.predictions(output)
                 accuracy = self.accuracy.calculate(prediction, batch_y)
-
                 self.backward(output, batch_y)
-
                 self.optimizer.decay_learning_rate_step()
                 for layer in self.trainable:
                     self.optimizer.update_weights(layer)
                 self.optimizer.post_step_learning_rate()
-
                 if not step % print_every or step == train_steps - 1:
                     print(f'step: {step}, ' +
                           f'acc: {accuracy:.3f}, ' +
@@ -94,6 +91,7 @@ class Model:
             epoch_data_loss, epoch_regularization_loss = self.loss.calculated_accumulated(include_reg=True)
             epoch_loss = epoch_data_loss + epoch_regularization_loss
             epoch_accuracy = self.accuracy.calculated_accumulated()
+
             print(f'training, ' +
                   f'acc: {epoch_accuracy:.3f}, ' +
                   f'loss: {epoch_loss:.3f} (' +
@@ -103,12 +101,10 @@ class Model:
 
             loss_history.append(epoch_loss)
             accuracy_history.append(epoch_accuracy)
-
             if val_data is not None:
                 val_loss, val_accuracy = self.evaluate(X_val, y_val, batch_size=batch_size)
                 val_loss_history.append(val_loss)
                 val_accuracy_history.append(val_accuracy)
-
             if self.early_stopping is not None:
                 if self.early_stopping(val_loss):
                     print(f'Early stopping at epoch {epoch}')
@@ -137,7 +133,7 @@ class Model:
             if hasattr(self.layers[i], 'weights'):
                 self.trainable.append(self.layers[i])
 
-        self.loss.set_trainable(self.trainable)
+            self.loss.set_trainable(self.trainable)
 
         if isinstance(self.layers[-1], Softmax) and isinstance(self.output_activation, LossCategoricalCrossEntropy):
             self.softmax_output = SoftmaxCrossEntropy()
