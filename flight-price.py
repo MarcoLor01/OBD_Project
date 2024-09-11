@@ -13,7 +13,8 @@ from neural_network.optimizers.Adam import Adam
 from neural_network.regularization.EarlyStopping import EarlyStopping
 from utils.Graphic import plot_training_metrics
 
-X_train, y_train, X_test, y_test = flight_price_dataset()
+X_train, y_train, X_test, y_test, scaler = flight_price_dataset()
+
 X_train, y_train = shuffle_data(X_train, y_train)
 X_test, y_test = shuffle_data(X_test, y_test)
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
@@ -44,6 +45,9 @@ loss_history, accuracy_history, val_loss_history, val_accuracy_history = model.t
 
 confidences = model.predict(X_test[:20])
 
+# Predici con il modello
+y_pred_scaled = model.predict(X_test) #AGGIUNTO ORA
+y_pred = scaler.inverse_transform(y_pred_scaled) # AGGIUNTO ORA
 predictions = model.output_activation.predictions(confidences)
 print(predictions)
 print(y_test[:20])

@@ -11,4 +11,5 @@ def mnist_dataset():
     y_test = test_df['label'].values
     X_train = X_train / 255.0
     X_test = X_test / 255.0
+    print("Shape y_train: ", y_train.shape)
     return X_train, y_train, X_test, y_test

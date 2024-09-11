@@ -39,6 +39,7 @@ model.set(
 
 model.finalize()
 print_model(-1, model)
+print("Shape y: ", y_train.shape)
 loss_history, accuracy_history, val_loss_history, val_accuracy_history = model.train(X_train, y_train, val_data=(X_val, y_val), epochs=100, batch_size=128, print_every=100)
 
 confidences = model.predict(X_test[:20])

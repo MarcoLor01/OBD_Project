@@ -10,6 +10,7 @@ class LossCategoricalCrossEntropy(Loss):
 
     def forward(self, output, target_class):
         samples = len(output)  # Length of predictions
+
         y_prediction_clipped = np.clip(output, 1e-7, 1 - 1e-7)
 
         # Probabilities for target values -

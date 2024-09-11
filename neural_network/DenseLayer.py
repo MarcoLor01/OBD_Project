@@ -56,7 +56,6 @@ class DenseLayer:
 
         if self.l2_regularization_bias > 0:
             self.dbiases += 2 * self.l2_regularization_bias * self.biases
-
         self.dinputs = np.dot(dvalues, self.weights.T)
 
 

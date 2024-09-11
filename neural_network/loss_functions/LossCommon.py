@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
+import pandas as pd
 
 
 # Common loss function
@@ -19,6 +20,7 @@ class Loss(ABC):
         self.trainable = trainable_layers
 
     def calculate(self, output, target_class, include_reg=False):
+
         sample_losses = self.forward(output, target_class)
         data_loss = np.mean(sample_losses)
         

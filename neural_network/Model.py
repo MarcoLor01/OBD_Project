@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import pandas as pd
 
 from neural_network.FirstLayer import FirstLayer
 from neural_network.activation_functions.SoftmaxActivationFunction import Softmax
@@ -70,7 +71,9 @@ class Model:
                     end = start + batch_size
                     batch_X = X[start:end]
                     batch_y = y[start:end]
+
                 output = self.forward(batch_X, training=True)
+
                 data_loss, reg_loss = self.loss.calculate(output, batch_y, include_reg=True)
                 loss = data_loss + reg_loss
                 prediction = self.output_activation.predictions(output)
@@ -155,7 +158,6 @@ class Model:
             for layer in reversed(self.layers[:-1]):
                 layer.backward(layer.next.dinputs)
             return
-
         self.loss.backward(output, y)
         for layer in reversed(self.layers):
             layer.backward(layer.next.dinputs)

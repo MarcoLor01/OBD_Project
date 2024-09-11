@@ -6,6 +6,7 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 def flight_price_dataset():
     # Carica il dataset
     df = pd.read_csv('dataset/flight_price_prediction/flight_price.csv')
+    df = df.dropna()
 
     # Trasformazione delle etichette
     le = LabelEncoder()
@@ -14,23 +15,21 @@ def flight_price_dataset():
             df[col] = le.fit_transform(df[col])
 
     # Suddivisione con label
-    X = df.drop(["price"], axis=1)
-    y = df['price']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
-                                                        random_state=42)
+    X = df.drop(["price"], axis=1).values
+    y = df['price'].values.reshape(-1, 1)  # Reshape di y per essere 2D
 
-    # Scaling dei dati
-    mmscaler = MinMaxScaler(feature_range=(0, 1))
+    # Divisione dei dati in training e test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Fit scalatore solo su dati di training
-    X_train = mmscaler.fit_transform(X_train)
+    # Scaling dei dati di input
+    mmscaler_X = MinMaxScaler(feature_range=(0, 1))
+    X_train = mmscaler_X.fit_transform(X_train)
+    X_test = mmscaler_X.transform(X_test)
 
-    # Trasforma i dati di test con lo scalatore già fit sui dati di training
-    X_test = mmscaler.transform(X_test)
+    # Scaling dei dati di target (y) #CONTROLLARE QUESTO SCALING
+    mmscaler_y = MinMaxScaler(feature_range=(0, 1))
+    y_train = mmscaler_y.fit_transform(y_train)
+    y_test = mmscaler_y.transform(y_test)
 
-    # Conversione in DataFrame per comodità
-    X_train = pd.DataFrame(X_train, columns=X.columns)
-    X_test = pd.DataFrame(X_test, columns=X.columns)
-
-    return X_train, y_train, X_test, y_test
+    return X_train, y_train, X_test, y_test, mmscaler_y
 
