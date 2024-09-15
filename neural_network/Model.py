@@ -31,7 +31,7 @@ class Model:
         self.accuracy = accuracy
         self.early_stopping = early_stopping
 
-    def train(self, X, y, *, epochs=1, print_every=1, val_data=None, batch_size=None):
+    def train(self, X, y, *, epochs=1, print_every=1, val_data=None, batch_size=None, history=None):
         val_loss = 0
         X_val = None
         y_val = None
@@ -51,10 +51,11 @@ class Model:
                 if validation_steps * batch_size < len(X_val):
                     validation_steps += 1
 
-        loss_history = []
-        accuracy_history = []
-        val_loss_history = []
-        val_accuracy_history = []
+        if history is not None:
+            loss_history = []
+            accuracy_history = []
+            val_loss_history = []
+            val_accuracy_history = []
 
         for epoch in range(1, epochs + 1):
             print(f'epoch: {epoch}')
@@ -101,19 +102,22 @@ class Model:
                   f'data_loss: {epoch_data_loss:.3f}, ' +
                   f'reg_loss: {epoch_regularization_loss:.3f}), ' +
                   f'lr: {self.optimizer.current_learning_rate}')
-
-            loss_history.append(epoch_loss)
-            accuracy_history.append(epoch_accuracy)
+            if history is not None:
+                loss_history.append(epoch_loss)
+                accuracy_history.append(epoch_accuracy)
             if val_data is not None:
                 val_loss, val_accuracy = self.evaluate(X_val, y_val, batch_size=batch_size)
-                val_loss_history.append(val_loss)
-                val_accuracy_history.append(val_accuracy)
+                if history is not None:
+                    val_loss_history.append(val_loss)
+                    val_accuracy_history.append(val_accuracy)
             if self.early_stopping is not None:
                 if self.early_stopping(val_loss):
                     print(f'Early stopping at epoch {epoch}')
                     break
-        return loss_history, accuracy_history, val_loss_history, val_accuracy_history
-
+            if history is not None:
+                return loss_history, accuracy_history, val_loss_history, val_accuracy_history
+            else:
+                return
     def finalize(self):
         self.input_layer = FirstLayer()
         layer_count = len(self.layers)
