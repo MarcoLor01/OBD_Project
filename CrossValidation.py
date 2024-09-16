@@ -1,3 +1,4 @@
+import time
 from itertools import product
 
 import numpy as np
@@ -7,13 +8,18 @@ from neural_network.activation_functions.LinearActivation import ActivationLinea
 from neural_network.activation_functions.ReluActivationFunction import Relu
 from neural_network.activation_functions.SigmoidActivationFunction import Sigmoid
 from neural_network.activation_functions.SoftmaxActivationFunction import Softmax
+from neural_network.activation_functions.TanhActivationFunction import Tanh
 from neural_network.loss_functions.LossBinaryCrossEntropy import LossBinaryCrossEntropy
 from neural_network.loss_functions.LossCategoricalCrossEntropy import LossCategoricalCrossEntropy
 from neural_network.loss_functions.LossMSE import Mse
 from neural_network.metrics_implementations.AccuracyCategorical import AccuracyCategorical
 from neural_network.metrics_implementations.AccuracyRegression import AccuracyRegression
 from neural_network.metrics_implementations.F1_score import compare_test_multiclass
+from neural_network.optimizers.Adagrad import Adagrad
+from neural_network.optimizers.RmsProp import Rmsprop
+from neural_network.optimizers.Sgd import Sgd
 from neural_network.optimizers.Adam import Adam
+from neural_network.regularization.Dropout import Dropout
 from neural_network.regularization.EarlyStopping import EarlyStopping
 
 from colorama import Fore, Style, init
@@ -36,17 +42,20 @@ def print_model(iteration, model, combination, number_of_combinations):
         print(f"{Fore.BLUE + '=' * 40}\n")
     print(f"{Fore.CYAN}\n Modello {combination}/{number_of_combinations}")
     print(f"{Fore.CYAN}\n ===== STRUTTURA DELLA RETE NEURALE =====\n")
-
+    model_opt = model.optimizer
     for i, layer in enumerate(model.layers):
         layer_type = type(layer).__name__
         if hasattr(layer, 'weights'):
             dimensions = layer.weights.shape
-            layer_description = f"{layer_type} di dimensione: {dimensions}"
+            layer_description = f"{str(layer)}"
+        elif hasattr(layer, 'rate'):
+            layer_description = f"{str(layer)}"
         else:
-            layer_description = f"Attivazione {layer_type}"
+            layer_description = f"Attivazione {str(layer_type)}"
 
         print(f"{Fore.CYAN}{i}: {layer_description}")
         print(f"{Fore.CYAN + '-' * 40}")
+    print(f"\n{Fore.CYAN} {str(model_opt)}")
 
     print(Style.RESET_ALL)
 
@@ -74,14 +83,20 @@ def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, acti
     for i, (train_indices, test_indices) in enumerate(fold_indices):
         X_train, y_train = X[train_indices], y[train_indices]
         X_test, y_test = X[test_indices], y[test_indices]
-        model = model_creation(X_train.shape[1], n_output, layer_neurons, activation_function[0], regularizer, optimizer,
-                               use_dropout)
+
+        model = model_creation(X_train.shape[1], n_output, layer_neurons, activation_function[0], regularizer,
+                               optimizer, use_dropout)
+
+
         if print_check is False:
             print_model(-1, model, combination, number_of_combinations)
             print_check = True
         print(f"\n========== Combination {i + 1} ==========\n")
-        model.train(X_train, y_train, epochs=1, batch_size=128, print_every=100)
+        start_time = time.time()
 
+        model.train(X_train, y_train, epochs=20, batch_size=128, print_every=100)
+        end_time = time.time()
+        print("Tempo impiegato per il training di questo modello: ", end_time - start_time)
         y_pred = model.predict(X_test)
 
         accuracy, precision, recall, f1_score = compare_test_multiclass(y_pred, y_test)
@@ -106,7 +121,6 @@ def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, acti
 
 
 def model_creation(X_train_shape, n_output, layer_neurons, activation_function, regularizer, optimizer, use_dropout):
-
     initialization = ''
     act_func_1 = None
     act_func_2 = None
@@ -116,9 +130,10 @@ def model_creation(X_train_shape, n_output, layer_neurons, activation_function, 
         act_func_1 = Relu()
         act_func_2 = Relu()
         initialization = "He"
-    # else:
-    #    act_func = Tanh
-    #    initialization = "Glorot"
+    else:
+        act_func_1 = Tanh()
+        act_func_2 = Tanh()
+        initialization = "Glorot"
     if n_output > 2:
         output_function = Softmax()
         loss_function = LossCategoricalCrossEntropy()
@@ -130,46 +145,92 @@ def model_creation(X_train_shape, n_output, layer_neurons, activation_function, 
     else:
         output_function = ActivationLinear()
         loss_function = Mse()
-        accuracy_metric = AccuracyRegression() #Da cambiare
+        accuracy_metric = AccuracyRegression()
 
     model = Model()
-    model.add_layer(DenseLayer(X_train_shape, layer_neurons[0], initialization=initialization))
-    model.add_layer(act_func_1)
-    model.add_layer(DenseLayer(layer_neurons[0], layer_neurons[1], initialization=initialization))
-    model.add_layer(act_func_2)
-    model.add_layer(DenseLayer(layer_neurons[1], n_output, initialization=initialization))
-    model.add_layer(output_function)
+    if regularizer == "l1":
+
+        model.add_layer(
+            DenseLayer(X_train_shape, layer_neurons[0], initialization=initialization, l1_regularization_weights=0.001,
+                       l1_regularization_bias=0.001))
+        model.add_layer(act_func_1)
+        check_dropout(model, use_dropout)
+        model.add_layer(DenseLayer(layer_neurons[0], layer_neurons[1], initialization=initialization,
+                                   l1_regularization_weights=0.001, l1_regularization_bias=0.001))
+        model.add_layer(act_func_2)
+        check_dropout(model, use_dropout)
+
+        model.add_layer(
+            DenseLayer(layer_neurons[1], n_output, initialization=initialization, l1_regularization_weights=0.001,
+                       l1_regularization_bias=0.001))
+        model.add_layer(output_function)
+
+    elif regularizer == "l2":
+        model.add_layer(
+            DenseLayer(X_train_shape, layer_neurons[0], initialization=initialization, l2_regularization_weights=0.001,
+                       l2_regularization_bias=0.001))
+        model.add_layer(act_func_1)
+        check_dropout(model, use_dropout)
+
+        model.add_layer(DenseLayer(layer_neurons[0], layer_neurons[1], initialization=initialization,
+                                   l2_regularization_weights=0.001, l2_regularization_bias=0.001))
+        model.add_layer(act_func_2)
+        check_dropout(model, use_dropout)
+        model.add_layer(
+            DenseLayer(layer_neurons[1], n_output, initialization=initialization, l2_regularization_weights=0.001,
+                       l2_regularization_bias=0.001))
+        model.add_layer(output_function)
+
+    else:
+        # No regularization (None)
+        model.add_layer(DenseLayer(X_train_shape, layer_neurons[0], initialization=initialization))
+        model.add_layer(act_func_1)
+        check_dropout(model, use_dropout)
+        model.add_layer(DenseLayer(layer_neurons[0], layer_neurons[1], initialization=initialization))
+        model.add_layer(act_func_2)
+        check_dropout(model, use_dropout)
+        model.add_layer(DenseLayer(layer_neurons[1], n_output, initialization=initialization))
+        model.add_layer(output_function)
+
+    opt_alg = None
+
+    if optimizer == "adam":
+        opt_alg = Adam(decay=0.0001, learning_rate=0.01)
+    elif optimizer == "rmsprop":
+        opt_alg = Rmsprop(decay=0.0001, learning_rate=0.01)
+    elif optimizer == "adagrad":
+        opt_alg = Adagrad(learning_rate=0.01)
+    elif optimizer == "sgd":
+        opt_alg = Sgd(decay=0.0001, learning_rate=0.01)
+    elif optimizer == "sgd_momentum":
+        opt_alg = Sgd(decay=0.0001, momentum=0.9, learning_rate=0.01)
 
     model.set(
         loss=loss_function,
-        optimizer=Adam(decay=5e-5), #Sistemare
+        optimizer=opt_alg,
         accuracy=accuracy_metric,
-        early_stopping=EarlyStopping(patience=6, min_delta=0.1)
+        early_stopping=EarlyStopping(patience=6, min_delta=0.001)
     )
 
     model.finalize()
     return model
 
 
-
-# layer_combination = [[512, 256], [256, 128], [128, 64]]
-layer_combination = [[512, 256]]
-# regularizers = ["l1", "l2", None]
-regularizers = [None]
-#optimizers = ["adam", "rmsprop", "sgd", "adagrad"]
-optimizers =["adam"]
-#dropout = [True, False]
-dropout = [False]
-activation_functions = ["relu"]
+layer_combination = [[512, 256], [1024, 512]]
+regularizers = ["l1", "l2", None]
+optimizers = ["adam", "rmsprop", "adagrad"]
+dropout = [True, False]
+activation_functions = ["relu", "tanh"]
 
 
 def validation(X_train, y_train, n_output, number_of_folders):
     all_combinations = product(layer_combination, activation_functions, regularizers, optimizers, dropout)
     i = 1
-
+    start_time = time.time()
     for combination in all_combinations:
         numbers_of_neurons, activation_function, regularizer, optimizer, use_dropout = combination
-        model, accuracy, precision, recall, f1_score = k_fold_cross_validation(X_train, y_train, number_of_folders, n_output,
+        model, accuracy, precision, recall, f1_score = k_fold_cross_validation(X_train, y_train, number_of_folders,
+                                                                               n_output,
                                                                                numbers_of_neurons, activation_functions,
                                                                                regularizer, optimizer, use_dropout,
                                                                                calculate_combinations_count(), i)
@@ -193,17 +254,16 @@ def validation(X_train, y_train, n_output, number_of_folders):
         print(f"Precision: {best_model['precision']}")
         print(f"Recall: {best_model['recall']}")
         print(f"F1 Score: {best_model['f1_metric']}")
-
+    end_time = time.time()
+    print("Tempo impiegato per la C-V: ", end_time - start_time)
     return best_model
+
 
 def calculate_combinations_count():
     # Calcola il numero totale di combinazioni
     all_combinations = list(product(layer_combination, activation_functions, regularizers, optimizers, dropout))
     return len(all_combinations)
 
-
-
-#TODO
-# 1) Capire quale è il miglor decay per l'ottimizzatore, e fare tutte le combinazioni
-# 2) Funzione di attivazione passa una lista, ho messo [0] per ora ma è da aggiustare
-# 3) Gestire le regolarizzazioni
+def check_dropout(model, dropout_bool):
+    if dropout_bool is True:
+        model.add_layer(Dropout(0.2))

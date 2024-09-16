@@ -14,6 +14,9 @@ class Adagrad:  # Adaptive gradient
         if self.decay:
             self.current_learning_rate = self.learning_rate * (1. / (1. + self.decay * self.iteration))
 
+    def __str__(self):
+        return f"Ottimizzatore utilizzato: Adagrad con learning rate: {self.learning_rate}"
+
 
     def update_weights(self, layer):
         if not hasattr(layer, "adagrad_weights"):

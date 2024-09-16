@@ -3,7 +3,7 @@ import numpy as np
 from CrossValidation import validation
 from dataset.fashion_mnist_classification.preprocess_fashion_mnist import fashion_mnist_dataset
 from dataset.fashion_mnist_classification.preprocess_fashion_mnist import shuffle_data
-from neural_network.metrics_implementations.F1_score import compare_test, compare_test_multiclass
+from neural_network.metrics_implementations.F1_score import compare_test_multiclass
 from utils.Graphic import print_confusion_matrix
 
 X_train, y_train, X_test, y_test = fashion_mnist_dataset()
@@ -23,4 +23,3 @@ print("Mean Recall: ", recall)
 print("Mean F1_Score: ", f1_score)
 
 print_confusion_matrix(y_test, y_pred)
-

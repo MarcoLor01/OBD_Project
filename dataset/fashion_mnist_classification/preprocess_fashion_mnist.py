@@ -9,8 +9,8 @@ BATCH_SIZE = 128
 def fashion_mnist_dataset():
     train_df = pd.read_csv('dataset/fashion_mnist_classification/fashion-mnist_train.csv')
     test_df = pd.read_csv('dataset/fashion_mnist_classification/fashion-mnist_test.csv')
-
     X_train = train_df.drop(columns=['label']).values
+    print("SHAPE: ", X_train.shape)
     y_train = train_df['label'].values
     X_test = test_df.drop(columns=['label']).values
     y_test = test_df['label'].values

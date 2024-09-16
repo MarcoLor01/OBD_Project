@@ -36,7 +36,6 @@ class Model:
         X_val = None
         y_val = None
         self.accuracy.initialize(y)
-
         train_steps = 1
 
         if val_data is not None:
@@ -72,9 +71,7 @@ class Model:
                     end = start + batch_size
                     batch_X = X[start:end]
                     batch_y = y[start:end]
-
                 output = self.forward(batch_X, training=True)
-
                 data_loss, reg_loss = self.loss.calculate(output, batch_y, include_reg=True)
                 loss = data_loss + reg_loss
                 prediction = self.output_activation.predictions(output)
@@ -114,10 +111,10 @@ class Model:
                 if self.early_stopping(val_loss):
                     print(f'Early stopping at epoch {epoch}')
                     break
-            if history is not None:
-                return loss_history, accuracy_history, val_loss_history, val_accuracy_history
-            else:
-                return
+        if history is not None:
+            return loss_history, accuracy_history, val_loss_history, val_accuracy_history
+        else:
+            return
     def finalize(self):
         self.input_layer = FirstLayer()
         layer_count = len(self.layers)
@@ -148,9 +145,9 @@ class Model:
     def forward(self, X, training):
         self.input_layer.forward(X, training)
         layer = None
-
         for layer in self.layers:
             layer.forward(layer.prev.output, training)
+
 
         if layer is not None:
             return layer.output
