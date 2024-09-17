@@ -6,8 +6,7 @@ from neural_network.activation_functions.SigmoidActivationFunction import Sigmoi
 from neural_network.activation_functions.SoftmaxActivationFunction import Softmax
 from neural_network.loss_functions.LossBinaryCrossEntropy import LossBinaryCrossEntropy
 from neural_network.loss_functions.LossCategoricalCrossEntropy import LossCategoricalCrossEntropy
-from neural_network.loss_functions.LossMSE import Mse
-from neural_network.loss_functions.LossMAE import Mae
+from neural_network.loss_functions.RMSE import Rmse
 from neural_network.metrics_implementations.AccuracyCategorical import AccuracyCategorical
 from neural_network.metrics_implementations.AccuracyRegression import AccuracyRegression
 from neural_network.metrics_implementations.F1_score import F1Score
@@ -20,12 +19,15 @@ import random
 
 from neural_network.regularization.EarlyStopping import EarlyStopping
 
+list_of_layers_combination = [[32, 16], [32, 32], [64, 32], [64, 64], [128, 64], [256, 128]]
+regularizers = ["l1", "l2", False]
+regularizers_other = ["Dropout", False]
+combination_number = len(list_of_layers_combination) * len(regularizers) * len(regularizers_other)
 
-def randomizedSearchCV(X, y, *, val_data, parameters, combination, number_of_classes, epochs, batch_size):
+
+def randomizedSearchCV(X, y, *, val_data, parameters, number_of_classes=1, epochs, batch_size):
     best_model = None
     best_value = 0.0
-    optimizer_choice = select_random_optimizer(parameters)
-    number_of_layers = select_number_layer(parameters)
     X_val, y_val = val_data
     if number_of_classes > 2:
         loss = LossCategoricalCrossEntropy()
@@ -33,13 +35,15 @@ def randomizedSearchCV(X, y, *, val_data, parameters, combination, number_of_cla
     elif number_of_classes == 2:
         loss = LossBinaryCrossEntropy()
         activation_function = Sigmoid()
-    else:
-        loss = random.choice([Mse(), Mae()])
+    elif number_of_classes == 1:
+        loss = Rmse()
         activation_function = ActivationLinear()
+    else:
+        print("Value of number of classes not valid")
 
-    accuracy = set_accuracy(parameters['metrics'], number_of_classes)
+    accuracy = F1Score()  # Da aggiungere per regressione
 
-    for i in range(combination):
+    for i in range(combination_number):
         next_input = X.shape[1]
         random.seed(None)
         weights_reg = select_common_regularizer(parameters)
@@ -87,7 +91,8 @@ def randomizedSearchCV(X, y, *, val_data, parameters, combination, number_of_cla
 def instance_layer(weights_reg, next_input, neurons_per_layer):
     if 'L2' in weights_reg:
         l2_values = weights_reg['L2']
-        return DenseLayer(next_input, neurons_per_layer, l2_regularization_bias=l2_values['bias'], l2_regularization_weights=l2_values['weights'])
+        return DenseLayer(next_input, neurons_per_layer, l2_regularization_bias=l2_values['bias'],
+                          l2_regularization_weights=l2_values['weights'])
     if 'L1' in weights_reg:
         l1_values = weights_reg['L1']
         return DenseLayer(next_input, neurons_per_layer, l1_regularization_bias=l1_values['bias'],

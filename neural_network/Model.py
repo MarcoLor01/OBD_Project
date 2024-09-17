@@ -59,6 +59,12 @@ class Model:
         for epoch in range(1, epochs + 1):
             print(f'epoch: {epoch}')
 
+            # Mescola X e y insieme prima di ogni epoca
+            indices = np.arange(len(X))  # Crea una lista di indici
+            np.random.shuffle(indices)  # Mescola gli indici
+            X = X[indices]  # Applica la mescolatura a X
+            y = y[indices]  # Applica la mescolatura a y
+
             self.loss.new_pass()
             self.accuracy.new_pass()
 
@@ -186,7 +192,7 @@ class Model:
             output = self.forward(batch_X, training=False)
             self.loss.calculate(output, batch_y)
             prediction = self.output_activation.predictions(output)
-            self.accuracy.calculate(prediction, batch_y)
+            self.accuracy.calculate(prediction, batch_y, validation=True)
 
         validation_loss = self.loss.calculated_accumulated()
         validation_accuracy = self.accuracy.calculated_accumulated()

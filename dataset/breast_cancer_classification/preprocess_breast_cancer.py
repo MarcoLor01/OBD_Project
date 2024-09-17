@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -20,6 +22,7 @@ def breast_cancer_dataset():
     output = df['diagnosis']
 
     X_train, X_test, y_train, y_test = train_test_split(X, output, test_size=0.2, random_state=42)
+    plot_breast_cancer_distribution(y_train, y_test)
     X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
     scaler = StandardScaler()
@@ -33,13 +36,32 @@ def breast_cancer_dataset():
     y_test = y_test.values.reshape(-1, 1)
 
 
-    # Controllare le forme per verificare che corrispondano
-    print(f"Forma di y_train_encoded: {y_train.shape}")
-    print(f"Forma di y_valid_encoded: {y_valid.shape}")
-    print(f"Forma di y_test_encoded: {y_test.shape}")
-
     return X_train, X_test, y_train, y_test, X_valid, y_valid
 
+
+def plot_breast_cancer_distribution(y_train, y_test):
+    # Unire i dati di train e test per visualizzare la distribuzione totale
+    y_combined = np.concatenate([y_train, y_test])
+
+    # Conta il numero di esempi per ogni classe (0 = benigno, 1 = maligno)
+    unique, counts = np.unique(y_combined, return_counts=True)
+
+    # Creare il grafico dell'istogramma
+    plt.figure(figsize=(6, 4))
+    plt.bar(unique, counts, color=['#1f77b4', '#ff7f0e'])
+
+    # Aggiungere etichette e titolo
+    plt.title("Distribuzione di tumori maligni (1) e benigni (0) nel dataset")
+    plt.xlabel("Diagnosi (0 = Benigno, 1 = Maligno)")
+    plt.ylabel("Numero di istanze")
+
+    # Aggiungere etichette alle barre
+    for i, count in zip(unique, counts):
+        plt.text(i, count + 5, str(count), ha='center', fontsize=12)
+
+    # Mostrare il grafico
+    plt.xticks([0, 1])  # Etichette degli assi x (0 e 1)
+    plt.show()
 
 # Per regressione:
 

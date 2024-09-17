@@ -12,6 +12,5 @@ class AccuracyRegression(Accuracy):
             self.accuracy = np.std(y) / 250
 
     def compare(self, predictions, target_class):
-        target_class = target_class.reshape(-1, 1)
         return np.absolute(predictions - target_class) < self.accuracy
 

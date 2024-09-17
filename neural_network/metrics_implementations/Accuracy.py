@@ -7,12 +7,11 @@ class Accuracy:
         self.accumulated_count = None
         self.accumulated_sum = None
 
-    def calculate(self, predictions, y):
+    def calculate(self, predictions, y, validation=False):
         comparisons = self.compare(predictions, y)
         accuracy = np.mean(comparisons)
         self.accumulated_sum += np.sum(comparisons)
         self.accumulated_count += len(comparisons)
-
         return accuracy
 
     def calculated_accumulated(self):

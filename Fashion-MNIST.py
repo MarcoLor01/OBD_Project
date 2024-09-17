@@ -1,6 +1,7 @@
 from sklearn.model_selection import train_test_split
 
-from dataset.fashion_mnist_classification.preprocess_fashion_mnist import fashion_mnist_dataset
+from dataset.fashion_mnist_classification.preprocess_fashion_mnist import fashion_mnist_dataset, \
+    print_fashion_mnist_stats, print_label_frequencies
 from dataset.fashion_mnist_classification.preprocess_fashion_mnist import shuffle_data
 from neural_network.DenseLayer import DenseLayer
 from neural_network.Model import Model
@@ -14,10 +15,11 @@ from neural_network.regularization.EarlyStopping import EarlyStopping
 from utils.Graphic import plot_training_metrics
 
 X_train, y_train, X_test, y_test = fashion_mnist_dataset()
+print_label_frequencies(X_train, y_train)
+print_fashion_mnist_stats(X_train, y_train)
 X_train, y_train = shuffle_data(X_train, y_train)
 X_test, y_test = shuffle_data(X_test, y_test)
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
-
 # Modello di base, descritto all'interno della relazione
 
 n_inputs = X_train.shape[1]
