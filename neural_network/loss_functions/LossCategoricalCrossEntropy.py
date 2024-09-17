@@ -41,4 +41,12 @@ class LossCategoricalCrossEntropy(Loss):
             target_class = np.eye(labels)[target_class]
 
         self.dinputs = -target_class / dvalues
+
+        if np.isnan(self.dinputs).any():
+            print(self.dinputs.shape)
+            print(self.dinputs)
+            print(dvalues)
+            print(target_class)
+            print("Warning: NaN detected in dinputs!")
+
         self.dinputs = self.dinputs / samples  # Normalization of Gradient

@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
-
-# Function for printing accuracy and loss
+from sklearn.metrics import confusion_matrix
 
 
 def plot_training_metrics(loss_history, accuracy_history=None):
@@ -19,7 +19,6 @@ def plot_training_metrics(loss_history, accuracy_history=None):
     plt.grid(True)
     plt.legend()
 
-    # Plot dell'accuratezza se disponibile
     if accuracy_history:
         plt.subplot(1, 2, 2)
         plt.plot(epochs, accuracy_history, label='Training Accuracy', marker='o')
@@ -88,3 +87,16 @@ def plot_residuals(model, predictions, y_test):
 
     print("Errore medio commesso sul test set: ", mean_error)
     print("Errore mediano commesso sul test set: ", median_error)
+
+
+def print_confusion_matrix(y_true, y_pred):
+    cm = confusion_matrix(y_true, y_pred)
+
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                xticklabels=np.arange(cm.shape[1]),
+                yticklabels=np.arange(cm.shape[0]))
+    plt.xlabel('Predicted Labels')
+    plt.ylabel('True Labels')
+    plt.title('Confusion Matrix')
+    plt.show()

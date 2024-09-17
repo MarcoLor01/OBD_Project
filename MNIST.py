@@ -21,7 +21,7 @@ n_inputs = X_train.shape[1]
 n_output = 10
 n_neurons_first_hidden_layer = int(2/3 * n_inputs + n_output)
 n_neurons_second_hidden_layer = int(n_neurons_first_hidden_layer / 2)
-
+print(X_train.shape)
 model = Model()
 model.add_layer(DenseLayer(X_train.shape[1], n_neurons_first_hidden_layer, initialization="He", l1_regularization_weights=0.001, l1_regularization_bias=0.001))
 model.add_layer(Relu())

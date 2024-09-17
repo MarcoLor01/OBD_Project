@@ -28,3 +28,10 @@ class Rmsprop:  # Adaptive gradient
 
     def post_step_learning_rate(self):
         self.iteration += 1
+
+
+    def __str__(self):
+        if self.decay != 0.:
+            return f"Ottimizzatore utilizzato: RmsProp con learning rate: {self.learning_rate} e tasso di decadimento: {self.decay}"
+        else:
+            return f"Ottimizzatore utilizzato: RmsProp con learning rate: {self.learning_rate}"

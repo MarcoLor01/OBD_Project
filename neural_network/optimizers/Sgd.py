@@ -41,3 +41,12 @@ class Sgd:
 
     def post_step_learning_rate(self):
         self.iteration += 1
+
+
+    def __str__(self):
+        if self.momentum != 0:
+            return f"Ottimizzatore utilizzato: Sgd con learning rate: {self.learning_rate}, tasso di decadimento: {self.decay} e momentum: {self.momentum}"
+        elif self.decay != 0.:
+            return f"Ottimizzatore utilizzato: Sgd con learning rate: {self.learning_rate} e tasso di decadimento: {self.decay}"
+        else:
+            return f"Ottimizzatore utilizzato: Adam con learning rate: {self.learning_rate}"
