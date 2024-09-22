@@ -57,7 +57,7 @@ def graphic_regression_difference(labels, predictions):
     plt.show()
 
 
-def plot_residuals(model, predictions, y_test):
+def plot_residuals(predictions, y_test):
     """
     Calcola e visualizza l'istogramma dei residui per un modello di regressione.
 
@@ -89,13 +89,18 @@ def plot_residuals(model, predictions, y_test):
     print("Errore mediano commesso sul test set: ", median_error)
 
 
-def print_confusion_matrix(y_true, y_pred):
+def print_confusion_matrix(y_true, y_pred, class_labels=None):
     cm = confusion_matrix(y_true, y_pred)
 
     plt.figure(figsize=(10, 7))
+
+    if class_labels is None:
+        class_labels = np.arange(cm.shape[1])  # Usa numeri interi se non vengono passate etichette
+
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                xticklabels=np.arange(cm.shape[1]),
-                yticklabels=np.arange(cm.shape[0]))
+                xticklabels=class_labels,
+                yticklabels=class_labels)
+
     plt.xlabel('Predicted Labels')
     plt.ylabel('True Labels')
     plt.title('Confusion Matrix')

@@ -10,9 +10,12 @@ class LossBinaryCrossEntropy(Loss):
         self.dinputs = None
 
     def forward(self, prediction, target):
+
         pred_clipped = np.clip(prediction, 1e-7, 1 - 1e-7)
         sample_losses = -(target * np.log(pred_clipped) + (1 - target) * np.log(1 - pred_clipped))
+
         sample_losses = np.mean(sample_losses, axis=-1)
+
         return sample_losses
 
     def backward(self, dvalues, target):

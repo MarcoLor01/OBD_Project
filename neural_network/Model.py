@@ -31,12 +31,18 @@ class Model:
         self.accuracy = accuracy
         self.early_stopping = early_stopping
 
-    def train(self, X, y, *, epochs=1, print_every=1, val_data=None, batch_size=None, history=None):
+    def train(self, X, y, *, epochs=1, print_every=1, val_data=None, batch_size=None, history=None,
+              task_type='classification'):
         val_loss = 0
         X_val = None
         y_val = None
-        self.accuracy.initialize(y)
         train_steps = 1
+
+        # Se task_type è 'classification', inizializza accuracy; altrimenti None
+        if task_type == 'classification':
+            self.accuracy.initialize(y)
+        else:
+            self.accuracy = None  # Nessuna accuracy per la regressione
 
         if val_data is not None:
             X_val, y_val = val_data
@@ -52,9 +58,9 @@ class Model:
 
         if history is not None:
             loss_history = []
-            accuracy_history = []
+            accuracy_history = [] if task_type == 'classification' else None
             val_loss_history = []
-            val_accuracy_history = []
+            val_accuracy_history = [] if task_type == 'classification' else None
 
         for epoch in range(1, epochs + 1):
             print(f'epoch: {epoch}')
@@ -66,7 +72,8 @@ class Model:
             y = y[indices]  # Applica la mescolatura a y
 
             self.loss.new_pass()
-            self.accuracy.new_pass()
+            if task_type == 'classification':
+                self.accuracy.new_pass()
 
             for step in range(train_steps):
                 if batch_size is None:
@@ -77,19 +84,27 @@ class Model:
                     end = start + batch_size
                     batch_X = X[start:end]
                     batch_y = y[start:end]
-                output = self.forward(batch_X, training=True)
+
+                output = self.forward(batch_X, training=True)  # Questo restituisce (128,2)
                 data_loss, reg_loss = self.loss.calculate(output, batch_y, include_reg=True)
                 loss = data_loss + reg_loss
-                prediction = self.output_activation.predictions(output)
-                accuracy = self.accuracy.calculate(prediction, batch_y)
+
+                # Se task_type è 'classification', calcola prediction e accuracy
+                if task_type == 'classification':
+                    prediction = self.output_activation.predictions(output)
+                    accuracy = self.accuracy.calculate(prediction, batch_y)
+                else:
+                    accuracy = None  # Nessuna accuracy per la regressione
+
                 self.backward(output, batch_y)
                 self.optimizer.decay_learning_rate_step()
                 for layer in self.trainable:
                     self.optimizer.update_weights(layer)
                 self.optimizer.post_step_learning_rate()
+
                 if not step % print_every or step == train_steps - 1:
                     print(f'step: {step}, ' +
-                          f'acc: {accuracy:.3f}, ' +
+                          f'acc: {"{:.3f}".format(accuracy) if accuracy is not None else "None"}, ' +
                           f'loss: {loss:.3f} (' +
                           f'data_loss: {data_loss:.3f}, ' +
                           f'reg_loss: {reg_loss:.3f}), ' +
@@ -97,30 +112,37 @@ class Model:
 
             epoch_data_loss, epoch_regularization_loss = self.loss.calculated_accumulated(include_reg=True)
             epoch_loss = epoch_data_loss + epoch_regularization_loss
-            epoch_accuracy = self.accuracy.calculated_accumulated()
+            epoch_accuracy = self.accuracy.calculated_accumulated() if task_type == 'classification' else None
 
             print(f'training, ' +
-                  f'acc: {epoch_accuracy:.3f}, ' +
+                  f'acc: {"{:.3f}".format(epoch_accuracy) if epoch_accuracy is not None else "None"}, ' +
                   f'loss: {epoch_loss:.3f} (' +
                   f'data_loss: {epoch_data_loss:.3f}, ' +
                   f'reg_loss: {epoch_regularization_loss:.3f}), ' +
                   f'lr: {self.optimizer.current_learning_rate}')
+
             if history is not None:
                 loss_history.append(epoch_loss)
-                accuracy_history.append(epoch_accuracy)
+                if task_type == 'classification':
+                    accuracy_history.append(epoch_accuracy)
+
             if val_data is not None:
                 val_loss, val_accuracy = self.evaluate(X_val, y_val, batch_size=batch_size)
                 if history is not None:
                     val_loss_history.append(val_loss)
-                    val_accuracy_history.append(val_accuracy)
+                    if task_type == 'classification':
+                        val_accuracy_history.append(val_accuracy)
+
             if self.early_stopping is not None:
                 if self.early_stopping(val_loss):
                     print(f'Early stopping at epoch {epoch}')
                     break
+
         if history is not None:
-            return loss_history, accuracy_history, val_loss_history, val_accuracy_history
+            return loss_history, accuracy_history if task_type == 'classification' else None, val_loss_history, val_accuracy_history if task_type == 'classification' else None
         else:
             return
+
     def finalize(self):
         self.input_layer = FirstLayer()
         layer_count = len(self.layers)
@@ -154,12 +176,12 @@ class Model:
         for layer in self.layers:
             layer.forward(layer.prev.output, training)
 
-
         if layer is not None:
             return layer.output
 
     def backward(self, output, y):
         if self.softmax_output is not None:
+
             self.softmax_output.backward(output, y)
             self.layers[-1].dinputs = self.softmax_output.dinputs
             for layer in reversed(self.layers[:-1]):
@@ -224,7 +246,6 @@ class Model:
 
             batch_output = self.forward(batch_X, training=False)
             output.append(batch_output)
-
 
         return np.concatenate(output, axis=0)
 

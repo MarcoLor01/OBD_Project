@@ -57,31 +57,30 @@ def compare_test_multiclass(predictions, y):
 
 
 def compare_test(predictions, y):
+    # Controllo per i problemi di dimensione tra predictions e y
+    assert predictions.shape[0] == y.shape[0], "Le dimensioni di predictions e y devono essere uguali"
+
+    # Se le previsioni sono distribuite su più classi (probabilità), scegli la classe con probabilità massima
     if predictions.ndim > 1 and predictions.shape[1] > 1:
         predictions = np.argmax(predictions, axis=1)
 
-    tp = ((predictions == 1) & (y == 1)).sum()
+    # Confrontiamo i vettori predictions e y per calcolare TP, FP, FN, TN
+    tp = np.sum((predictions == 1) & (y == 1))  # Veri Positivi
+    fp = np.sum((predictions == 1) & (y == 0))  # Falsi Positivi
+    fn = np.sum((predictions == 0) & (y == 1))  # Falsi Negativi
+    tn = np.sum((predictions == 0) & (y == 0))  # Veri Negativi
 
-    fp = ((predictions == 1) & (y == 0)).sum()
-
-    fn = ((predictions == 0) & (y == 1)).sum()
-
-    tn = ((predictions == 0) & (y == 0)).sum()
-
-    # Precisione: TP / (TP + FP)
+    # Calcolo della precisione: TP / (TP + FP)
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
 
-    # Richiamo (Recall): TP / (TP + FN)
+    # Calcolo del richiamo (Recall): TP / (TP + FN)
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
 
-    # Accuratezza: (TP + TN) / (TP + TN + FP + FN)
+    # Calcolo dell'accuratezza: (TP + TN) / (TP + TN + FP + FN)
     accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0
 
-    # F1 Score: 2 * (precision * recall) / (precision + recall)
-    if precision + recall > 0:
-        f1_score = 2 * (precision * recall) / (precision + recall)
-    else:
-        f1_score = 0
+    # Calcolo del F1 Score: 2 * (precision * recall) / (precision + recall)
+    f1_score = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
     return accuracy, precision, recall, f1_score
 
