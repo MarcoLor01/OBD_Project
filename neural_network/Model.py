@@ -32,8 +32,7 @@ class Model:
         self.early_stopping = early_stopping
 
     def train(self, X, y, *, epochs=1, print_every=1, val_data=None, batch_size=None, history=None,
-              task_type='classification'):
-        val_loss = 0
+              task_type='classification', early_stopping_metric=None):
         X_val = None
         y_val = None
         train_steps = 1
@@ -127,17 +126,28 @@ class Model:
                     accuracy_history.append(epoch_accuracy)
 
             if val_data is not None:
-                val_loss, val_accuracy = self.evaluate(X_val, y_val, batch_size=batch_size)
+                if self.accuracy is not None:
+                    val_loss, val_accuracy = self.evaluate(X_val, y_val, batch_size=batch_size)
+                else:
+                    val_loss = self.evaluate(X_val, y_val, batch_size=batch_size)
                 if history is not None:
                     val_loss_history.append(val_loss)
                     if task_type == 'classification':
                         val_accuracy_history.append(val_accuracy)
 
             if self.early_stopping is not None:
-                if self.early_stopping(val_loss):
+                if early_stopping_metric == "loss":
+                    metric = epoch_loss
+                elif early_stopping_metric == "valid_loss":
+                    metric = val_loss
+                elif early_stopping_metric == "accuracy":
+                    metric = epoch_accuracy
+                elif early_stopping_metric == "valid_accuracy":
+                    metric = val_accuracy
+
+                if self.early_stopping(metric):
                     print(f'Early stopping at epoch {epoch}')
                     break
-
         if history is not None:
             return loss_history, accuracy_history if task_type == 'classification' else None, val_loss_history, val_accuracy_history if task_type == 'classification' else None
         else:
@@ -199,8 +209,9 @@ class Model:
             if validation_steps * batch_size < len(X_val):
                 validation_steps += 1
 
-        self.loss.new_pass()
-        self.accuracy.new_pass()
+        if self.accuracy is not None:
+            self.loss.new_pass()
+            self.accuracy.new_pass()
 
         for step in range(validation_steps):
             if batch_size is None:
@@ -215,16 +226,22 @@ class Model:
             output = self.forward(batch_X, training=False)
             self.loss.calculate(output, batch_y)
             prediction = self.output_activation.predictions(output)
-            self.accuracy.calculate(prediction, batch_y, validation=True)
+            if self.accuracy is not None:
+                self.accuracy.calculate(prediction, batch_y, validation=True)
 
         validation_loss = self.loss.calculated_accumulated()
-        validation_accuracy = self.accuracy.calculated_accumulated()
+        if self.accuracy is not None:
+            validation_accuracy = self.accuracy.calculated_accumulated()
 
-        print(f'validation, ' +
-              f'acc: {validation_accuracy:.3f}, ' +
-              f'loss: {validation_loss:.3f}')
-        self.accuracy_val_value = validation_accuracy
-        return validation_loss, validation_accuracy
+            print(f'validation, ' +
+                  f'acc: {validation_accuracy:.3f}, ' +
+                  f'loss: {validation_loss:.3f}')
+            self.accuracy_val_value = validation_accuracy
+            return validation_loss, validation_accuracy
+        else:
+            print(f'validation, ' +
+                  f'loss: {validation_loss:.3f}')
+            return validation_loss
 
     def predict(self, X, *, batch_size=None):
         prediction_steps = 1

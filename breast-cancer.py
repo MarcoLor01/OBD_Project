@@ -54,6 +54,7 @@ def retrain_and_evaluate(X_train, X_test, y_train, y_test):
     """
 
     # ===== STRUTTURA DELLA MIGLIOR RETE NEURALE =====
+
     best_model_retrained = Model()
     best_model_retrained.add_layer(DenseLayer(X_train.shape[1], 64, initialization="He"))
     best_model_retrained.add_layer(Relu())
@@ -75,7 +76,6 @@ def retrain_and_evaluate(X_train, X_test, y_train, y_test):
 
     loss_history, _, _, _ = best_model_retrained.train(X_train, y_train, val_data=(X_val, y_val), epochs=100, batch_size=64, print_every=100, history=True)
 
-    plot_training_metrics(loss_history)
 
     # Testiamo il modello sul Test Set
     y_pred = best_model_retrained.predict(X_test)

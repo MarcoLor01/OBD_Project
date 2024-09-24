@@ -264,9 +264,9 @@ def model_creation(X_train_shape, n_output, layer_neurons, activation_function, 
     return model
 
 
-layer_combination = [[512, 256], [256, 128], [1024, 512]]
+layer_combination = [[512, 256], [1024, 512]]
 regularizers = ["l2", "l1", None]
-optimizers = ["adam", "rmsprop", "sgd_momentum"]
+optimizers = ["adam", "rmsprop"]
 dropout = [True, False]
 activation_functions = ["relu", "tanh"]
 
@@ -300,12 +300,13 @@ def parallel_train_fold(train_indices, test_indices, X, y, n_output, layer_neuro
 
     if n_output == 1:
         task_type = "regression"
+        metric = "loss"
     else:
         task_type = "classification"
+        metric = "accuracy"
 
-    # Esegui il training del modello
     start_time = time.time()
-    model.train(X_train, y_train, epochs=epochs, batch_size=64, print_every=100, task_type=task_type)
+    model.train(X_train, y_train, epochs=epochs, batch_size=64, print_every=100, task_type=task_type, early_stopping_metric=metric)
     end_time = time.time()
 
     # Stampa il tempo impiegato per il training con il colore del thread
