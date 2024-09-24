@@ -20,17 +20,22 @@ class EarlyStopping:
             self.best_score = metric_value
         else:
             if self.mode == 'min':  # Per regressione (monitoraggio della loss)
+
                 if metric_value < self.best_score - self.min_delta:
                     self.best_score = metric_value
                     self.counter = 0  # Resetta il contatore quando trovi un miglioramento
                 else:
                     self.counter += 1
             elif self.mode == 'max':  # Per classificazione (monitoraggio di accuracy o F1-score)
+                print("Arrivato: ", metric_value, "Best score: ", self.best_score, "+delta=", self.best_score + self.min_delta)
                 if metric_value > self.best_score + self.min_delta:
+                    print("Passa")
                     self.best_score = metric_value
                     self.counter = 0  # Resetta il contatore quando trovi un miglioramento
                 else:
-                    self.counter += 1
+                    print("Counter pre:", self.counter)
+                    self.counter = self.counter + 1
+                    print("Aumenta il counter:", self.counter)
 
         # Fermati se la pazienza è stata superata
         if self.counter >= self.patience:
