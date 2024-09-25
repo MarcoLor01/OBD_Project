@@ -16,5 +16,22 @@ You can install these dependencies using the `requirements.txt` file with the fo
 
 ```bash
 pip install -r requirements.txt
+```
+### 2. Running the Script
+The script can be run in two modes: crossvalidation and test. Below are the instructions for each mode.
 
+**Cross-validation Mode**
+This mode performs cross-validation on the training data to find the best model.
 
+Run the script with:
+```bash
+python <dataset_name>.py crossvalidation
+```
+
+**Test Mode**
+This mode retrains the model on the training data and evaluates it on the test set.
+
+Run the script with:
+```bash
+python <dataset_name>.py test
+```
