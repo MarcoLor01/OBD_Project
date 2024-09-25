@@ -23,26 +23,21 @@ class Adam:  # Adaptive gradient
             layer.bias_momentums = np.zeros_like(layer.biases)
             layer.bias_cache = np.zeros_like(layer.biases)
 
-
         layer.dweights = layer.dweights.astype(float)
         layer.dbiases = layer.dbiases.astype(float)
 
-        # Update momentum with current gradients
         layer.weight_momentums = self.beta_1 * layer.weight_momentums + (1 - self.beta_1) * layer.dweights
         layer.bias_momentums = self.beta_1 * layer.bias_momentums + (1 - self.beta_1) * layer.dbiases
 
-        # Get corrected momentum
         weight_momentums_corrected = layer.weight_momentums / (1 - self.beta_1 ** (self.iteration + 1))
         bias_momentums_corrected = layer.bias_momentums / (1 - self.beta_1 ** (self.iteration + 1))
 
-        # Update cache with squared current gradients
         layer.weight_cache = self.beta_2 * layer.weight_cache + (
-                    1 - self.beta_2) * layer.dweights ** 2  # PROBLEMA: LAYER.DWEIGHTS = OBJECT
+                1 - self.beta_2) * layer.dweights ** 2  # PROBLEMA: LAYER.DWEIGHTS = OBJECT
         layer.bias_cache = self.beta_2 * layer.bias_cache + (1 - self.beta_2) * layer.dbiases ** 2
         weight_cache_corrected = layer.weight_cache / (1 - self.beta_2 ** (self.iteration + 1))
         bias_cache_corrected = layer.bias_cache / (1 - self.beta_2 ** (self.iteration + 1))
 
-        # Vanilla SGD parameter update + normalization with square rooted cache
         layer.weights += -self.current_learning_rate * weight_momentums_corrected / (
                 np.sqrt(weight_cache_corrected) + self.epsilon)
         layer.biases += -self.current_learning_rate * bias_momentums_corrected / (
@@ -51,10 +46,8 @@ class Adam:  # Adaptive gradient
     def post_step_learning_rate(self):
         self.iteration += 1
 
-
     def __str__(self):
         if self.decay != 0.:
             return f"Ottimizzatore utilizzato: Adam con learning rate: {self.learning_rate} e tasso di decadimento: {self.decay}"
         else:
             return f"Ottimizzatore utilizzato: Adam con learning rate: {self.learning_rate}"
-

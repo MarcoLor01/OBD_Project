@@ -33,10 +33,7 @@ def plot_training_metrics(loss_history, accuracy_history=None):
 
 
 def graphic_regression_difference(labels, predictions):
-    # Creare il grafico
     plt.figure(figsize=(8, 6))
-
-    # Scatter plot: labels sull'asse x, predictions sull'asse y
 
     plt.scatter(labels, predictions, color='blue', label='Predizioni vs Etichette')
     for i in range(len(labels)):
@@ -50,38 +47,24 @@ def graphic_regression_difference(labels, predictions):
     plt.xlabel('Etichette (Labels)')
     plt.ylabel('Predizioni')
 
-    # Aggiungere una legenda
     plt.legend()
 
-    # Mostrare il grafico
     plt.show()
 
 
 def plot_residuals(predictions, y_test):
-    """
-    Calcola e visualizza l'istogramma dei residui per un modello di regressione.
-
-    Parameters:
-    - model: Il modello di regressione già addestrato
-    - X_test: Dati di input di test
-    - y_test: Valori osservati (target reali) di test
-    """
-    # Ottieni le predizioni del modello
-    # Calcola i residui (errore: valore osservato - valore predetto)
     residuals = y_test - predictions
 
     mean_error = np.mean(residuals)
     median_error = np.median(residuals)
-    # Crea l'istogramma dei residui
+
     plt.figure(figsize=(8, 6))
     plt.hist(residuals, bins=30, edgecolor='k', alpha=0.7)
 
-    # Imposta i titoli e le etichette
     plt.title('Istogramma dei Residui', fontsize=16)
     plt.xlabel('Residui', fontsize=14)
     plt.ylabel('Frequenza', fontsize=14)
 
-    # Mostra il grafico
     plt.grid(True)
     plt.show()
 
@@ -95,7 +78,7 @@ def print_confusion_matrix(y_true, y_pred, class_labels=None):
     plt.figure(figsize=(10, 7))
 
     if class_labels is None:
-        class_labels = np.arange(cm.shape[1])  # Usa numeri interi se non vengono passate etichette
+        class_labels = np.arange(cm.shape[1])
 
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                 xticklabels=class_labels,
@@ -104,4 +87,32 @@ def print_confusion_matrix(y_true, y_pred, class_labels=None):
     plt.xlabel('Predicted Labels')
     plt.ylabel('True Labels')
     plt.title('Confusion Matrix')
+    plt.show()
+
+
+def print_fashion_mnist_stats(X_train, y_train):
+
+    plt.figure(figsize=(8, 6))
+    plt.hist(y_train, bins=np.arange(11) - 0.5, edgecolor='black', alpha=0.7)
+    plt.xticks(np.arange(10))
+    plt.title("Distribuzione delle Classi nel Dataset Fashion MNIST", fontsize=16)
+    plt.xlabel("Classe", fontsize=14)
+    plt.ylabel("Frequenza", fontsize=14)
+    plt.grid(True)
+    plt.show()
+
+    class_labels = ['T-shirt/Top', 'Pantaloni', 'Pullover', 'Vestito', 'Cappotto',
+                    'Sandalo', 'Camicia', 'Sneaker', 'Borsa', 'Stivale']
+
+    num_examples = 6
+    plt.figure(figsize=(12, 8))
+
+    for i in range(num_examples):
+        plt.subplot(2, 3, i + 1)
+        img = X_train[i].reshape(28, 28)
+        plt.imshow(img, cmap='gray')
+        plt.title(f"Classe: {class_labels[y_train[i]]}")
+        plt.axis('off')
+
+    plt.tight_layout()
     plt.show()

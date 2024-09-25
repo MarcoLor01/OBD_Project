@@ -9,11 +9,10 @@ class Tanh:
 
     def forward(self, input_units, training):
         self.inputs = input_units
-        self.output = np.tanh(input_units)  # Funzione di attivazione tanh
+        self.output = np.tanh(input_units)
 
     def __str__(self):
         return "Attivazione Tanh"
 
     def backward(self, dvalues):
-        # Derivata di tanh è 1 - tanh^2
         self.dinputs = dvalues * (1 - np.power(self.output, 2))

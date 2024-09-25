@@ -1,9 +1,8 @@
 import numpy as np
 
 
-# Implementation of softmax activation function
-
-
+def predictions(outputs):
+    return np.argmax(outputs, axis=-1)
 
 
 class Softmax:
@@ -14,11 +13,10 @@ class Softmax:
 
     def __str__(self):
         return f"Attivazione Softmax"
-    def forward(self, input_units, training):
-        # Get unnormalized probabilities
-        exp_values = np.exp(input_units - np.max(input_units, axis=1, keepdims=True))
 
-        # Normalize them for each sample
+    def forward(self, input_units, training):
+
+        exp_values = np.exp(input_units - np.max(input_units, axis=1, keepdims=True))
         probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
 
         self.output = probabilities
@@ -32,6 +30,3 @@ class Softmax:
 
             self.dinputs[index] = np.dot(jacobian_matrix,
                                          single_dvalues)
-
-    def predictions(self, outputs):
-        return np.argmax(outputs, axis=-1)

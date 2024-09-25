@@ -1,8 +1,5 @@
 import numpy as np
 
-from neural_network.activation_functions.SoftmaxActivationFunction import Softmax
-from neural_network.loss_functions.LossCategoricalCrossEntropy import LossCategoricalCrossEntropy
-
 
 class SoftmaxCrossEntropy:
     def __init__(self):

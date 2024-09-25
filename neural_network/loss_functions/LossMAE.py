@@ -1,15 +1,15 @@
 import numpy as np
-
 from neural_network.loss_functions.LossCommon import Loss
 
 
 class Mae(Loss):
 
     def __init__(self):
+        super().__init__()
         self.dinputs = None
 
     def forward(self, output, target_class):
-        sample_losses = np.mean(np.abs(target_class - output), axis = -1)
+        sample_losses = np.mean(np.abs(target_class - output), axis=-1)
         return sample_losses
 
     def backward(self, dvalues, target_class):

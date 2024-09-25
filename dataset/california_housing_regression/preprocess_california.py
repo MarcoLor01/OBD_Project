@@ -6,7 +6,7 @@ import seaborn as sns
 
 
 def california_housing():
-    # Carica il dataset
+
     data = fetch_california_housing()
     X, y = data.data, data.target
 

@@ -24,5 +24,4 @@ class LossBinaryCrossEntropy(Loss):
         clipped_dvalues = np.clip(dvalues, 1e-7, 1 - 1e-7)
         self.dinputs = -(target / clipped_dvalues - (1 - target) / (1 - clipped_dvalues)) / outputs
 
-        # Normalize gradient
         self.dinputs = self.dinputs / samples

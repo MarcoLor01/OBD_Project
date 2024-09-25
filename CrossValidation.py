@@ -83,7 +83,7 @@ def print_model(iteration, model, combination, number_of_combinations):
     print(Style.RESET_ALL)
 
 
-def k_fold_indices(data, k):  # k = number of folds
+def k_fold_indices(data, k):
     fold_size = len(data) // k
     indices = np.arange(len(data))
     folds = []
@@ -96,26 +96,22 @@ def k_fold_indices(data, k):  # k = number of folds
 
 def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, activation_function, regularizer, optimizer,
                             use_dropout, number_of_combinations, combination, epochs):
-    # Liste per salvare i risultati
+
     accuracy_scores = []
     precision_scores = []
     recall_scores = []
     f1_score_scores = []
-    loss_scores = []  # Aggiunto per la regressione
+    loss_scores = []
 
-    # Ottieni gli indici per i vari fold
     fold_indices = k_fold_indices(X, number_of_folds)
     print_check = False
 
-    # Itera sui fold
     for i, (train_indices, test_indices) in enumerate(fold_indices):
         X_train, y_train = X[train_indices], y[train_indices]
         X_test, y_test = X[test_indices], y[test_indices]
 
-        # Creazione del modello
         model = model_creation(X_train.shape[1], n_output, layer_neurons, activation_function[0], regularizer, optimizer, use_dropout)
 
-        # Stampa il modello solo una volta
         if print_check is False:
             print_model(-1, model, combination, number_of_combinations)
             print_check = True
@@ -127,20 +123,16 @@ def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, acti
         print(f"\n========== Combination {i + 1} ==========\n")
         start_time = time.time()
 
-        # Addestramento del modello
         model.train(X_train, y_train, epochs=epochs, batch_size=128, print_every=100, task_type=task_type)
         end_time = time.time()
         print("Tempo impiegato per il training di questo modello: ", end_time - start_time, "secondi")
 
-        # Previsioni sui dati di test
         y_pred = model.predict(X_test)
 
-        # Task di regressione
         if n_output == 1:
             loss = model.loss.calculate(y_pred, y_test)
             loss_scores.append(loss)
 
-        # Task di classificazione
         else:
             accuracy, precision, recall, f1_score = compare_test_multiclass(y_pred, y_test)
             accuracy_scores.append(accuracy)
@@ -155,7 +147,7 @@ def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, acti
         print("Mean Loss: ", loss_mean)
         return model, loss_mean
 
-    else:  # Classificazione
+    else:
         accuracy_mean = np.mean(accuracy_scores)
         precision_mean = np.mean(precision_scores)
         recall_mean = np.mean(recall_scores)
@@ -171,11 +163,6 @@ def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, acti
 
 
 def model_creation(X_train_shape, n_output, layer_neurons, activation_function, regularizer, optimizer, use_dropout):
-    initialization = ''
-    act_func_1 = None
-    act_func_2 = None
-    loss_function = None
-    accuracy_metric = None
     if activation_function == 'relu':
         act_func_1 = Relu()
         act_func_2 = Relu()
@@ -230,7 +217,6 @@ def model_creation(X_train_shape, n_output, layer_neurons, activation_function, 
         model.add_layer(output_function)
 
     else:
-        # No regularization (None)
         model.add_layer(DenseLayer(X_train_shape, layer_neurons[0], initialization=initialization))
         model.add_layer(act_func_1)
         check_dropout(model, use_dropout)
@@ -257,18 +243,11 @@ def model_creation(X_train_shape, n_output, layer_neurons, activation_function, 
         loss=loss_function,
         optimizer=opt_alg,
         accuracy=accuracy_metric,
-        early_stopping=EarlyStopping(patience=6, min_delta=0.001, mode=modality)
+        early_stopping=EarlyStopping(patience=52, min_delta=0.001, mode=modality)
     )
 
     model.finalize()
     return model
-
-
-layer_combination = [[512, 256], [1024, 512]]
-regularizers = ["l2", "l1", None]
-optimizers = ["adam", "rmsprop"]
-dropout = [True, False]
-activation_functions = ["relu", "tanh"]
 
 model_printed = False
 thread_colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
@@ -277,25 +256,21 @@ thread_colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, For
 def parallel_train_fold(train_indices, test_indices, X, y, n_output, layer_neurons, activation_function, regularizer,
                         optimizer, use_dropout, combination, number_of_combinations, fold_number, epochs):
     global model_printed
-    # Assegna un colore al thread
+
     thread_color = thread_colors[fold_number % len(thread_colors)]
 
-    # Separa i dati in train e test per questo fold
     X_train, y_train = X[train_indices], y[train_indices]
     X_test, y_test = X[test_indices], y[test_indices]
 
-    # Crea il modello per questo fold
     model = model_creation(X_train.shape[1], n_output, layer_neurons, activation_function[0], regularizer, optimizer,
                            use_dropout)
 
-    # Stampa la struttura del modello solo una volta
     if not model_printed:
-        with threading.Lock():  # Blocco per sincronizzare i thread
+        with threading.Lock():
             if not model_printed:
                 print_model(-1, model, combination, number_of_combinations)
                 model_printed = True
 
-    # Stampa il fold corrente con il colore del thread
     print(f"{thread_color}== Combination {fold_number + 1} ==")
 
     if n_output == 1:
@@ -309,15 +284,13 @@ def parallel_train_fold(train_indices, test_indices, X, y, n_output, layer_neuro
     model.train(X_train, y_train, epochs=epochs, batch_size=64, print_every=100, task_type=task_type, early_stopping_metric=metric)
     end_time = time.time()
 
-    # Stampa il tempo impiegato per il training con il colore del thread
     print(
         f"{thread_color}Tempo impiegato per il training del modello del fold {fold_number + 1}: {end_time - start_time:.2f} secondi")
 
-    # Previsioni sui dati di test
     y_pred = model.predict(X_test)
 
     if n_output >= 2:
-        # Calcola le metriche di valutazione
+
         accuracy, precision, recall, f1_score = compare_test_multiclass(y_pred, y_test)
         return model, accuracy, precision, recall, f1_score
     else:
@@ -328,19 +301,16 @@ def parallel_train_fold(train_indices, test_indices, X, y, n_output, layer_neuro
 def k_fold_cross_validation_multithread(X, y, number_of_folds, n_output, layer_neurons, activation_function,
                                         regularizer, optimizer, use_dropout, number_of_combinations, combination,
                                         epochs):
-    # Genera gli indici per i vari fold
     fold_indices = k_fold_indices(X, number_of_folds)
 
-    # Inizializza le liste per memorizzare i risultati
     loss_score = []
     accuracy_score = []
     precision_score = []
     recall_score = []
     f1_score_score = []
 
-    # Utilizza ProcessPoolExecutor per parallelizzare i vari fold
     with ProcessPoolExecutor() as executor:
-        # Creiamo i task per ciascun fold
+
         futures = [
             executor.submit(parallel_train_fold, train_indices, test_indices, X, y, n_output, layer_neurons,
                             activation_function, regularizer, optimizer, use_dropout, combination,
@@ -348,7 +318,6 @@ def k_fold_cross_validation_multithread(X, y, number_of_folds, n_output, layer_n
             for fold_number, (train_indices, test_indices) in enumerate(fold_indices)
         ]
 
-        # Recuperiamo i risultati
         for future in futures:
             result = future.result()
 
@@ -356,7 +325,6 @@ def k_fold_cross_validation_multithread(X, y, number_of_folds, n_output, layer_n
                 model, loss = result
                 loss_score.append(loss)
 
-                # Task di classificazione
             else:
                 model, accuracy, precision, recall, f1_score = result
                 accuracy_score.append(accuracy)
@@ -364,19 +332,18 @@ def k_fold_cross_validation_multithread(X, y, number_of_folds, n_output, layer_n
                 recall_score.append(recall)
                 f1_score_score.append(f1_score)
 
-                # Appendiamo i risultati per questo fold
                 accuracy_score.append(accuracy)
                 precision_score.append(precision)
                 recall_score.append(recall)
                 f1_score_score.append(f1_score)
 
-    if n_output == 1:  # Regressione
+    if n_output == 1:
         loss_mean = np.mean(loss_score)
         print("\n========== Risultati della K-Fold Cross-Validation per Regressione ==========\n")
         print(f"Mean Loss: {loss_mean}")
         return model, loss_mean
 
-    else:  # Classificazione
+    else:
         accuracy_mean = np.mean(accuracy_score)
         precision_mean = np.mean(precision_score)
         recall_mean = np.mean(recall_score)
@@ -391,7 +358,7 @@ def k_fold_cross_validation_multithread(X, y, number_of_folds, n_output, layer_n
         return model, accuracy_mean, precision_mean, recall_mean, f1_mean
 
 
-def validation(X_train, y_train, n_output, number_of_folders, epochs, multithread=False):
+def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_combination, activation_functions, regularizers, optimizers, dropout, multithread=False):
     all_combinations = product(layer_combination, activation_functions, regularizers, optimizers, dropout)
     i = 1
     start_time = time.time()
@@ -432,12 +399,10 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, multithrea
 
         i += 1
 
-        # Aggiorna il miglior modello in base alla loss (regressione)
         if n_output == 1 and loss_mean < best_model['loss']:
             best_model['loss'] = loss_mean
             best_model['model'] = model
 
-        # Aggiorna il miglior modello in base a f1_score e altre metriche (classificazione)
         elif n_output > 1 and (f1_score > best_model['f1_metric'] or
                                (f1_score == best_model['f1_metric'] and precision > best_model['precision']) or
                                (f1_score == best_model['f1_metric'] and precision == best_model[
@@ -451,7 +416,6 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, multithrea
             best_model['recall'] = recall
             best_model['model'] = model
 
-        # Stampa i risultati migliori finora
         print("\n========== Best Model ==========\n")
         if n_output == 1:
             print(f"Loss: {best_model['loss']}")
@@ -468,7 +432,6 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, multithrea
 
 
 def calculate_combinations_count():
-    # Calcola il numero totale di combinazioni
     all_combinations = list(product(layer_combination, activation_functions, regularizers, optimizers, dropout))
     return len(all_combinations)
 

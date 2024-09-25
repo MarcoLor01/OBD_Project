@@ -37,11 +37,11 @@ class Model:
         y_val = None
         train_steps = 1
 
-        # Se task_type è 'classification', inizializza accuracy; altrimenti None
+
         if task_type == 'classification':
             self.accuracy.initialize(y)
         else:
-            self.accuracy = None  # Nessuna accuracy per la regressione
+            self.accuracy = None
 
         if val_data is not None:
             X_val, y_val = val_data
@@ -64,11 +64,11 @@ class Model:
         for epoch in range(1, epochs + 1):
             print(f'epoch: {epoch}')
 
-            # Mescola X e y insieme prima di ogni epoca
-            indices = np.arange(len(X))  # Crea una lista di indici
-            np.random.shuffle(indices)  # Mescola gli indici
-            X = X[indices]  # Applica la mescolatura a X
-            y = y[indices]  # Applica la mescolatura a y
+
+            indices = np.arange(len(X))
+            np.random.shuffle(indices)
+            X = X[indices]
+            y = y[indices]
 
             self.loss.new_pass()
             if task_type == 'classification':
@@ -84,16 +84,15 @@ class Model:
                     batch_X = X[start:end]
                     batch_y = y[start:end]
 
-                output = self.forward(batch_X, training=True)  # Questo restituisce (128,2)
+                output = self.forward(batch_X, training=True)
                 data_loss, reg_loss = self.loss.calculate(output, batch_y, include_reg=True)
                 loss = data_loss + reg_loss
 
-                # Se task_type è 'classification', calcola prediction e accuracy
                 if task_type == 'classification':
                     prediction = self.output_activation.predictions(output)
                     accuracy = self.accuracy.calculate(prediction, batch_y)
                 else:
-                    accuracy = None  # Nessuna accuracy per la regressione
+                    accuracy = None
 
                 self.backward(output, batch_y)
                 self.optimizer.decay_learning_rate_step()
@@ -265,27 +264,3 @@ class Model:
             output.append(batch_output)
 
         return np.concatenate(output, axis=0)
-
-    def save(self, path):
-
-        model = copy.deepcopy(self)
-
-        model.loss.new_pass()
-        model.accuracy.new_pass()
-
-        model.input_layer.__dict__.pop('output', None)
-        model.loss.__dict__.pop('dinputs', None)
-        # For each layer remove inputs, output and dinputs properties
-        for layer in model.layers:
-            for properties in ['inputs', 'output', 'dinputs',
-                               'dweights', 'dbiases']:
-                layer.__dict__.pop(properties, None)
-        # Open a file in the binary-write mode and save the model
-        with open(path, 'wb') as f:
-            pickle.dump(model, f)
-
-    @staticmethod
-    def load(path):
-        with open(path, 'rb') as f:
-            model = pickle.load(f)
-        return model

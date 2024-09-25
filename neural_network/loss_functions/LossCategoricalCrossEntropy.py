@@ -9,18 +9,16 @@ class LossCategoricalCrossEntropy(Loss):
         self.dinputs = None
 
     def forward(self, output, target_class):
-        samples = len(output)  # Length of predictions
+        samples = len(output)
 
         y_prediction_clipped = np.clip(output, 1e-7, 1 - 1e-7)
 
-        # Probabilities for target values -
-        # only if categorical labels
         if len(target_class.shape) == 1:
             correct_confidences = y_prediction_clipped[
                 range(samples),
                 target_class
             ]
-        # Mask values - only for one-hot encoded labels
+
         elif len(target_class.shape) == 2:
             correct_confidences = np.sum(
                 y_prediction_clipped * target_class,
@@ -49,4 +47,4 @@ class LossCategoricalCrossEntropy(Loss):
             print(target_class)
             print("Warning: NaN detected in dinputs!")
 
-        self.dinputs = self.dinputs / samples  # Normalization of Gradient
+        self.dinputs = self.dinputs / samples

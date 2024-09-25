@@ -1,6 +1,10 @@
 import numpy as np
 
 
+def predictions(outputs):
+    return (outputs > 0.5) * 1
+
+
 class Sigmoid:
 
     def __init__(self):
@@ -17,6 +21,3 @@ class Sigmoid:
 
     def backward(self, dvalues):
         self.dinputs = dvalues * (1 - self.output) * self.output
-
-    def predictions(self, outputs):
-        return (outputs > 0.5) * 1

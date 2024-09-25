@@ -1,8 +1,6 @@
 import numpy as np
 
 
-# Implementation of relu activation function
-
 def predictions(outputs):
     return outputs
 
@@ -16,7 +14,7 @@ class Relu:
 
     def forward(self, input_units, training):
         self.inputs = input_units
-        self.output = np.maximum(0, input_units)  # Element-wise maximum
+        self.output = np.maximum(0, input_units)
 
     def __str__(self):
         return f"Attivazione Relu"
