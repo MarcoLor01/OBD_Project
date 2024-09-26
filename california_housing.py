@@ -1,6 +1,5 @@
 import argparse
 
-import numpy as np
 from sklearn.model_selection import train_test_split
 
 from CrossValidation import validation, print_best_model
@@ -8,7 +7,6 @@ from dataset.california_housing_regression.preprocess_california import californ
 from neural_network.DenseLayer import DenseLayer
 from neural_network.Model import Model
 from neural_network.activation_functions.LinearActivation import ActivationLinear
-from neural_network.activation_functions.ReluActivationFunction import Relu
 from neural_network.activation_functions.TanhActivationFunction import Tanh
 from neural_network.loss_functions.RMSE import Rmse
 from neural_network.optimizers.Adam import Adam
@@ -17,7 +15,7 @@ from utils.Graphic import graphic_regression_difference, plot_residuals
 from utils.UtilsFunctions import shuffle_data
 
 
-def train_and_validate(X_train, y_train, n_output=2, number_of_folders=5, epochs=30, multithread=True):
+def train_and_validate(X_train, y_train, n_output=1, number_of_folders=5, epochs=30, multithread=True):
     """
     Esegue la validazione sul training set usando la cross-validation.
 
@@ -31,20 +29,18 @@ def train_and_validate(X_train, y_train, n_output=2, number_of_folders=5, epochs
     """
     # Parametri da impostare per la chiamata alla Cross-Validation
 
-    layer_combination = [[256, 128], [128, 64]]
+    layer_combination = [[64, 32], [32, 16], [16, 8]]
     regularizers = ["l2", "l1", None]
-    optimizers = ["adam", "rmsprop"]
+    optimizers = ["adam", "rmsprop", "sgd_momentum"]
     dropout = [True, False]
     activation_functions = ["relu", "tanh"]
 
     best_model = validation(X_train, y_train,
-                            n_output=1, number_of_folders=5,
-                            epochs=30, layer_combination=layer_combination,
+                            n_output=n_output, number_of_folders=number_of_folders,
+                            epochs=epochs, layer_combination=layer_combination,
                             regularizers=regularizers, optimizers=optimizers, dropout=dropout,
-                            activation_functions=activation_functions, multithread=True)
+                            activation_functions=activation_functions, multithread=multithread)
     print_best_model(best_model['model'])
-    print_best_model(best_model['model'])
-
 
 
 def retrain_and_evaluate(X_train, X_test, y_train, y_test):
@@ -75,12 +71,12 @@ def retrain_and_evaluate(X_train, X_test, y_train, y_test):
 
     best_model_retrained.finalize()
 
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42,
-                                                      stratify=y_train)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+
 
     loss_history, _, _, _ = best_model_retrained.train(X_train, y_train, val_data=(X_val, y_val), epochs=100,
                                                        batch_size=64, print_every=100, history=True,
-                                                       early_stopping_metric="val_loss")
+                                                       early_stopping_metric="valid_loss", task_type="regression")
 
     y_pred = best_model_retrained.predict(X_test)
     loss = best_model_retrained.loss.calculate(y_pred, y_test)

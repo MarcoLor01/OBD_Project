@@ -36,9 +36,7 @@ def graphic_regression_difference(labels, predictions):
     plt.figure(figsize=(8, 6))
 
     plt.scatter(labels, predictions, color='blue', label='Predizioni vs Etichette')
-    for i in range(len(labels)):
-        if labels[i] > 50000:
-            print("Label asse x:", labels[i], "Asse y: ", predictions[i])
+
     max_val = max(max(labels), max(predictions))  # valore massimo tra labels e predictions
     min_val = min(min(labels), min(predictions))  # valore minimo tra labels e predictions
     plt.plot([min_val, max_val], [min_val, max_val], color='red', linestyle='--', label='Linea di Perfetta Accuratezza')

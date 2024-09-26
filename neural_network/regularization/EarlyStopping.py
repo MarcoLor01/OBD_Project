@@ -21,16 +21,12 @@ class EarlyStopping:
                 else:
                     self.counter += 1
             elif self.mode == 'max':
-                print("Arrivato: ", metric_value, "Best score: ", self.best_score, "+delta=",
-                      self.best_score + self.min_delta)
+
                 if metric_value > self.best_score + self.min_delta:
-                    print("Passa")
                     self.best_score = metric_value
                     self.counter = 0
                 else:
-                    print("Counter pre:", self.counter)
                     self.counter = self.counter + 1
-                    print("Aumenta il counter:", self.counter)
 
         if self.counter >= self.patience:
             self.early_stop = True

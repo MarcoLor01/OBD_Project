@@ -96,7 +96,6 @@ def k_fold_indices(data, k):
 
 def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, activation_function, regularizer, optimizer,
                             use_dropout, number_of_combinations, combination, epochs):
-
     accuracy_scores = []
     precision_scores = []
     recall_scores = []
@@ -110,12 +109,13 @@ def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, acti
         X_train, y_train = X[train_indices], y[train_indices]
         X_test, y_test = X[test_indices], y[test_indices]
 
-        model = model_creation(X_train.shape[1], n_output, layer_neurons, activation_function[0], regularizer, optimizer, use_dropout)
+        model = model_creation(X_train.shape[1], n_output, layer_neurons, activation_function[0], regularizer,
+                               optimizer, use_dropout)
 
         if print_check is False:
             print_model(-1, model, combination, number_of_combinations)
             print_check = True
-
+        metric = "loss"
         if n_output == 1:
             task_type = "regression"
         else:
@@ -123,7 +123,7 @@ def k_fold_cross_validation(X, y, number_of_folds, n_output, layer_neurons, acti
         print(f"\n========== Combination {i + 1} ==========\n")
         start_time = time.time()
 
-        model.train(X_train, y_train, epochs=epochs, batch_size=128, print_every=100, task_type=task_type)
+        model.train(X_train, y_train, epochs=epochs, batch_size=128, print_every=100, task_type=task_type, early_stopping_metric=metric)
         end_time = time.time()
         print("Tempo impiegato per il training di questo modello: ", end_time - start_time, "secondi")
 
@@ -175,12 +175,12 @@ def model_creation(X_train_shape, n_output, layer_neurons, activation_function, 
         output_function = Softmax()
         loss_function = LossCategoricalCrossEntropy()
         accuracy_metric = AccuracyCategorical()
-        modality = "max"
     else:
         output_function = ActivationLinear()
         loss_function = Rmse()
         accuracy_metric = None
-        modality = "min"
+
+    modality = "min"
 
     model = Model()
     if regularizer == "l1":
@@ -249,6 +249,7 @@ def model_creation(X_train_shape, n_output, layer_neurons, activation_function, 
     model.finalize()
     return model
 
+
 model_printed = False
 thread_colors = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
 
@@ -272,17 +273,16 @@ def parallel_train_fold(train_indices, test_indices, X, y, n_output, layer_neuro
                 model_printed = True
 
     print(f"{thread_color}== Combination {fold_number + 1} ==")
-
+    metric = "loss"
     if n_output == 1:
         task_type = "regression"
-        metric = "loss"
+
     else:
         task_type = "classification"
-        metric = "accuracy"
 
     start_time = time.time()
-    print("CIAO")
-    model.train(X_train, y_train, epochs=epochs, batch_size=64, print_every=100, task_type=task_type, early_stopping_metric=metric)
+    model.train(X_train, y_train, epochs=epochs, batch_size=64, print_every=100, task_type=task_type,
+                early_stopping_metric=metric)
     end_time = time.time()
 
     print(
@@ -359,7 +359,8 @@ def k_fold_cross_validation_multithread(X, y, number_of_folds, n_output, layer_n
         return model, accuracy_mean, precision_mean, recall_mean, f1_mean
 
 
-def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_combination, activation_functions, regularizers, optimizers, dropout, multithread=False):
+def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_combination, activation_functions,
+               regularizers, optimizers, dropout, multithread=False):
     all_combinations = product(layer_combination, activation_functions, regularizers, optimizers, dropout)
     i = 1
     start_time = time.time()
@@ -396,7 +397,8 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_comb
                                                                        calculate_combinations_count(layer_combination,
                                                                                                     activation_functions,
                                                                                                     regularizers,
-                                                                                                    optimizers, dropout),
+                                                                                                    optimizers,
+                                                                                                    dropout),
                                                                        i, epochs)
             else:
                 model, accuracy, precision, recall, f1_score = k_fold_cross_validation_multithread(X_train, y_train,
@@ -460,4 +462,3 @@ def check_dropout(model, dropout_bool):
 
 # TODO
 # Chekkare perchè non è mai L1/L2
-# Sistemare relazione, e consegnare

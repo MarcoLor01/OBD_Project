@@ -42,7 +42,7 @@ def train_and_validate(X_train, y_train, n_output=10, number_of_folders=5, epoch
                             n_output=n_output, number_of_folders=number_of_folders,
                             epochs=epochs, layer_combination=layer_combination,
                             activation_functions=activation_functions, regularizers=regularizers,
-                            optimizers=optimizers, dropout=dropout, multithread=True
+                            optimizers=optimizers, dropout=dropout, multithread=multithread
                             )
 
     print_best_model(best_model['model'])
@@ -80,7 +80,8 @@ def retrain_and_evaluate(X_train, X_test, y_train, y_test):
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
     loss_history, _, _, _ = best_model_retrained.train(X_train, y_train, val_data=(X_val, y_val), epochs=100,
-                                                       batch_size=64, print_every=100, history=True)
+                                                       batch_size=64, print_every=100, history=True,
+                                                       early_stopping_metric="valid_loss")
 
     y_pred = best_model_retrained.predict(X_test)
     y_pred = np.argmax(y_pred, axis=1)

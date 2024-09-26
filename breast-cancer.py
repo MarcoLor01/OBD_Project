@@ -4,6 +4,8 @@ from sklearn.model_selection import train_test_split
 
 from CrossValidation import validation, print_best_model
 from dataset.breast_cancer_classification.preprocess_breast_cancer import breast_cancer_dataset
+from neural_network.activation_functions.TanhActivationFunction import Tanh
+from neural_network.optimizers.Sgd import Sgd
 from utils.UtilsFunctions import *
 from neural_network.DenseLayer import DenseLayer
 from neural_network.Model import Model
@@ -31,9 +33,9 @@ def train_and_validate(X_train, y_train, n_output=2, number_of_folders=5, epochs
     """
     # Parametri da impostare per la chiamata alla Cross-Validation
 
-    layer_combination = [[64, 32], [32, 16]]
+    layer_combination = [[64, 32], [32, 16], [16, 8], [32, 64], [128, 64]]
     regularizers = ["l2", "l1", None]
-    optimizers = ["adam", "rmsprop"]
+    optimizers = ["adam", "rmsprop", "sgd_momentum"]
     dropout = [True, False]
     activation_functions = ["relu", "tanh"]
 
@@ -45,7 +47,6 @@ def train_and_validate(X_train, y_train, n_output=2, number_of_folders=5, epochs
                             )
 
     print_best_model(best_model['model'])
-    return best_model
 
 
 def retrain_and_evaluate(X_train, X_test, y_train, y_test):
@@ -62,19 +63,19 @@ def retrain_and_evaluate(X_train, X_test, y_train, y_test):
     # ===== STRUTTURA DELLA MIGLIOR RETE NEURALE =====
 
     best_model_retrained = Model()
-    best_model_retrained.add_layer(DenseLayer(X_train.shape[1], 64, initialization="He"))
-    best_model_retrained.add_layer(Relu())
+    best_model_retrained.add_layer(DenseLayer(X_train.shape[1], 32, initialization="He", l1_regularization_bias=0.001, l1_regularization_weights=0.001))
+    best_model_retrained.add_layer(Tanh())
     best_model_retrained.add_layer(Dropout(0.2))
-    best_model_retrained.add_layer(DenseLayer(64, 32, initialization="He"))
-    best_model_retrained.add_layer(Relu())
+    best_model_retrained.add_layer(DenseLayer(32, 16, initialization="He", l1_regularization_bias=0.001, l1_regularization_weights=0.001))
+    best_model_retrained.add_layer(Tanh())
     best_model_retrained.add_layer(Dropout(0.2))
-    best_model_retrained.add_layer(DenseLayer(32, 2, initialization="He"))
+    best_model_retrained.add_layer(DenseLayer(16, 2, initialization="He", l1_regularization_bias=0.001, l1_regularization_weights=0.001))
     best_model_retrained.add_layer(Softmax())
 
     best_model_retrained.set(loss=LossCategoricalCrossEntropy(),
-                             optimizer=Rmsprop(learning_rate=0.01, decay=0.0001),
+                             optimizer=Sgd(learning_rate=0.01, decay=0.0001, momentum=0.9),
                              accuracy=AccuracyCategorical(),
-                             early_stopping=EarlyStopping(patience=10, min_delta=0.001))
+                             early_stopping=EarlyStopping(patience=10, min_delta=0.001, mode="min"))
 
     best_model_retrained.finalize()
 
@@ -82,7 +83,7 @@ def retrain_and_evaluate(X_train, X_test, y_train, y_test):
                                                       stratify=y_train)
 
     loss_history, _, _, _ = best_model_retrained.train(X_train, y_train, val_data=(X_val, y_val), epochs=100,
-                                                       batch_size=64, print_every=100, history=True)
+                                                       batch_size=64, print_every=100, history=True, early_stopping_metric="valid_loss")
 
     y_pred = best_model_retrained.predict(X_test)
     y_pred = np.argmax(y_pred, axis=1)
