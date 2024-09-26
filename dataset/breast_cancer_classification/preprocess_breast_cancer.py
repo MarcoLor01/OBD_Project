@@ -6,7 +6,6 @@ from sklearn.preprocessing import StandardScaler
 def breast_cancer_dataset():
     df = pd.read_csv('dataset/breast_cancer_classification/breast-cancer.csv')
     df = df.drop(columns=['id'], axis=1)
-    pd.set_option('future.no_silent_downcasting', True)
     df['diagnosis'] = df['diagnosis'].replace({'M': 1, 'B': 0})
 
     df = df.drop(

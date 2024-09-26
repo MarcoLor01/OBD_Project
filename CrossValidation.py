@@ -281,6 +281,7 @@ def parallel_train_fold(train_indices, test_indices, X, y, n_output, layer_neuro
         metric = "accuracy"
 
     start_time = time.time()
+    print("CIAO")
     model.train(X_train, y_train, epochs=epochs, batch_size=64, print_every=100, task_type=task_type, early_stopping_metric=metric)
     end_time = time.time()
 
@@ -369,7 +370,11 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_comb
             if n_output == 1:
                 model, loss_mean = k_fold_cross_validation(X_train, y_train, number_of_folders, n_output,
                                                            numbers_of_neurons, activation_function, regularizer,
-                                                           optimizer, use_dropout, calculate_combinations_count(), i,
+                                                           optimizer, use_dropout,
+                                                           calculate_combinations_count(layer_combination,
+                                                                                        activation_functions,
+                                                                                        regularizers, optimizers,
+                                                                                        dropout), i,
                                                            epochs)
             else:
                 model, accuracy, precision, recall, f1_score = k_fold_cross_validation(X_train, y_train,
@@ -377,14 +382,22 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_comb
                                                                                        numbers_of_neurons,
                                                                                        activation_function, regularizer,
                                                                                        optimizer, use_dropout,
-                                                                                       calculate_combinations_count(),
+                                                                                       calculate_combinations_count(
+                                                                                           layer_combination,
+                                                                                           activation_functions,
+                                                                                           regularizers, optimizers,
+                                                                                           dropout),
                                                                                        i, epochs)
         else:
             if n_output == 1:
                 model, loss_mean = k_fold_cross_validation_multithread(X_train, y_train, number_of_folders, n_output,
                                                                        numbers_of_neurons, activation_function,
                                                                        regularizer, optimizer, use_dropout,
-                                                                       calculate_combinations_count(), i, epochs)
+                                                                       calculate_combinations_count(layer_combination,
+                                                                                                    activation_functions,
+                                                                                                    regularizers,
+                                                                                                    optimizers, dropout),
+                                                                       i, epochs)
             else:
                 model, accuracy, precision, recall, f1_score = k_fold_cross_validation_multithread(X_train, y_train,
                                                                                                    number_of_folders,
@@ -394,7 +407,12 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_comb
                                                                                                    regularizer,
                                                                                                    optimizer,
                                                                                                    use_dropout,
-                                                                                                   calculate_combinations_count(),
+                                                                                                   calculate_combinations_count(
+                                                                                                       layer_combination,
+                                                                                                       activation_functions,
+                                                                                                       regularizers,
+                                                                                                       optimizers,
+                                                                                                       dropout),
                                                                                                    i, epochs)
 
         i += 1
@@ -431,7 +449,7 @@ def validation(X_train, y_train, n_output, number_of_folders, epochs, layer_comb
     return best_model
 
 
-def calculate_combinations_count():
+def calculate_combinations_count(layer_combination, activation_functions, regularizers, optimizers, dropout):
     all_combinations = list(product(layer_combination, activation_functions, regularizers, optimizers, dropout))
     return len(all_combinations)
 
@@ -439,3 +457,7 @@ def calculate_combinations_count():
 def check_dropout(model, dropout_bool):
     if dropout_bool is True:
         model.add_layer(Dropout(0.2))
+
+# TODO
+# Chekkare perchè non è mai L1/L2
+# Sistemare relazione, e consegnare

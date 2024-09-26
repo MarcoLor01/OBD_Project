@@ -17,7 +17,7 @@ from neural_network.regularization.EarlyStopping import EarlyStopping
 from utils.Graphic import print_confusion_matrix
 from utils.UtilsFunctions import shuffle_data
 
-def train_and_validate(X_train, y_train, n_output=2, number_of_folders=5, epochs=30, multithread=True):
+def train_and_validate(X_train, y_train, n_output=10, number_of_folders=5, epochs=30, multithread=True):
     """
     Esegue la validazione sul training set usando la cross-validation.
 

@@ -31,7 +31,7 @@ def train_and_validate(X_train, y_train, n_output=2, number_of_folders=5, epochs
     """
     # Parametri da impostare per la chiamata alla Cross-Validation
 
-    layer_combination = [[256, 128], [128, 64]]
+    layer_combination = [[64, 32], [32, 16]]
     regularizers = ["l2", "l1", None]
     optimizers = ["adam", "rmsprop"]
     dropout = [True, False]
@@ -41,7 +41,7 @@ def train_and_validate(X_train, y_train, n_output=2, number_of_folders=5, epochs
                             n_output=n_output, number_of_folders=number_of_folders,
                             epochs=epochs, layer_combination=layer_combination,
                             activation_functions=activation_functions, regularizers=regularizers,
-                            optimizers=optimizers, dropout=dropout, multithread=True
+                            optimizers=optimizers, dropout=dropout, multithread=multithread
                             )
 
     print_best_model(best_model['model'])

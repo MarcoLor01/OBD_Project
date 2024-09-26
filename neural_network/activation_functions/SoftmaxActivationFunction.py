@@ -1,8 +1,7 @@
 import numpy as np
 
 
-def predictions(outputs):
-    return np.argmax(outputs, axis=-1)
+
 
 
 class Softmax:
@@ -30,3 +29,6 @@ class Softmax:
 
             self.dinputs[index] = np.dot(jacobian_matrix,
                                          single_dvalues)
+
+    def predictions(self, outputs):
+        return np.argmax(outputs, axis=-1)
