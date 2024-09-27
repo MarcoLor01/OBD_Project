@@ -40,7 +40,7 @@ Example: ```regularizers = ["l2", "l1", None] ```
 
 **Optimizers**: Lists the optimizers to test during training.
 
-Example: ```optimizers = ["adam", "rmsprop", "sgd_momentum"] ```
+Example: ```optimizers = ["adam", "rmsprop", "sgd_momentum", "adagrad","sgd"] ```
 
 **Dropout**: Indicates whether dropout should be applied for regularization.
 
