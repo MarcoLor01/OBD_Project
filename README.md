@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ### 2. Running the Script
 The script can be run in two modes: crossvalidation and test. Below are the instructions for each mode.
 
-**Cross-validation Mode**
+#### 2.1 Cross-validation Mode
 This mode performs cross-validation on the training data to find the best model.
 
 Run the script with:
@@ -52,7 +52,7 @@ Example: ```activation_functions = ["relu", "tanh"]```
 
 These parameters can be modified directly within the train_and_validate function to test different network architectures and training configurations.
 
-**Test Mode**
+#### 2.2 Test Mode
 This mode retrains the model on the training data and evaluates it on the test set.
 
 Run the script with:
