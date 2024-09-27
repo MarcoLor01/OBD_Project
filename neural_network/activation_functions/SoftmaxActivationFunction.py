@@ -1,9 +1,6 @@
 import numpy as np
 
 
-
-
-
 class Softmax:
 
     def __init__(self):
@@ -14,7 +11,6 @@ class Softmax:
         return f"Attivazione Softmax"
 
     def forward(self, input_units, training):
-
         exp_values = np.exp(input_units - np.max(input_units, axis=1, keepdims=True))
         probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
 
