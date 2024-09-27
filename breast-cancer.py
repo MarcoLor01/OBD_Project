@@ -9,11 +9,9 @@ from neural_network.optimizers.Sgd import Sgd
 from utils.UtilsFunctions import *
 from neural_network.DenseLayer import DenseLayer
 from neural_network.Model import Model
-from neural_network.activation_functions.ReluActivationFunction import Relu
 from neural_network.activation_functions.SoftmaxActivationFunction import Softmax
 from neural_network.loss_functions.LossCategoricalCrossEntropy import LossCategoricalCrossEntropy
 from neural_network.metrics_implementations.AccuracyCategorical import AccuracyCategorical
-from neural_network.optimizers.RmsProp import Rmsprop
 from neural_network.regularization.Dropout import Dropout
 from neural_network.regularization.EarlyStopping import EarlyStopping
 from utils.Graphic import print_confusion_matrix
